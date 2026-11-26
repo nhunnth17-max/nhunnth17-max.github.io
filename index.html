@@ -4,32 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nail CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark}
+:root{color-scheme:light}
 [hidden]{display:none!important}
-body{font:15px system-ui,sans-serif;margin:0;background:#110d24;color:#eceaf8}
+body{font:15px "Be Vietnam Pro",system-ui,sans-serif;margin:0;background:#f4f5f7;color:#081c36}
 main{max-width:1100px;margin:auto;padding:16px 16px 90px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-input,select,button,textarea{font:inherit;padding:10px;border:1px solid #37304f;border-radius:10px;background:#1d1832;color:inherit;max-width:100%}
-button{cursor:pointer}button.main{background:linear-gradient(135deg,#6c5ce7,#4834d4);border:0;color:#fff}
+input,select,button,textarea{font:inherit;padding:10px;border:1px solid #d6dbe1;border-radius:10px;background:#fff;color:inherit;max-width:100%}
+button{cursor:pointer}button.main{background:linear-gradient(135deg,#0068ff,#0057d6);border:0;color:#fff;font-weight:600}
 .head{display:flex;justify-content:space-between;align-items:center;gap:8px}.head h2{margin:0}
 #q{width:100%;box-sizing:border-box;margin:12px 0}
 .cards{display:flex;gap:12px;overflow-x:auto;margin-bottom:12px}
-.stat{flex:0 0 150px;text-align:left;background:linear-gradient(135deg,#0f3445,#141c36)}
-.stat b{display:block;font-size:30px;color:#4fe3c1}.stat small{text-transform:uppercase;color:#a9a4c4}
-.stat:nth-child(4n){background:linear-gradient(135deg,#4a3a36,#221c30)}.stat:nth-child(5n){background:linear-gradient(135deg,#47163f,#22112c)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid button{padding:14px 4px;font-size:13px;background:#231b4a}.grid button:disabled{opacity:.35}
-.stat.on{border:2px solid #a29bfe}
-.scroll{overflow-x:auto;border:1px solid #37304f;border-radius:12px}table{width:100%;border-collapse:collapse;background:#1b1630}
-td,th{padding:12px;border-bottom:1px solid #2c2645;text-align:left;white-space:nowrap}
-th{background:#2a1f5c;text-transform:uppercase;font-size:13px;border-bottom:2px solid #6c5ce7}
-td button{background:none;border:0;padding:0;text-align:left}.code{font-family:monospace;color:#8d87a8}
-.ava{display:inline-block;width:30px;line-height:30px;border-radius:50%;background:#e8836a;text-align:center;font-size:11px;font-weight:700;margin-right:8px}
-.card{background:#1b1630;padding:12px;border-radius:12px;margin-bottom:12px}
-.dnc{color:#ff8a80;font-weight:600}dialog{border:1px solid #37304f;border-radius:14px;width:min(560px,88vw);background:#171229;color:inherit}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;background:#1b1442;border-top:1px solid #37304f;z-index:1}
-nav button{flex:1 0 82px;border:0;border-radius:0;background:none;color:#a9a4c4;font-size:13px;padding:14px 6px;border-top:3px solid transparent}
-nav button.on{color:#fff;background:#2e2470;border-top-color:#00cec9}
+.stat{flex:0 0 150px;text-align:left;background:linear-gradient(135deg,#fff,#e5efff)}
+.stat b{display:block;font-size:30px;color:#0068ff}.stat small{text-transform:uppercase;color:#5a6b81}
+.stat:nth-child(4n){background:linear-gradient(135deg,#fff,#dcebff)}.stat:nth-child(5n){background:linear-gradient(135deg,#fff,#eef4ff)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid button{padding:14px 4px;font-size:13px;background:#f0f6ff}.grid button:disabled{opacity:.35}
+.stat.on{border:2px solid #0068ff}
+.scroll{overflow-x:auto;border:1px solid #d6dbe1;border-radius:12px}table{width:100%;border-collapse:collapse;background:#fff}
+td,th{padding:12px;border-bottom:1px solid #e8ebef;text-align:left;white-space:nowrap}
+th{background:#e5efff;text-transform:uppercase;font-size:13px;border-bottom:2px solid #0068ff}
+td button{background:none;border:0;padding:0;text-align:left}.code{font-family:monospace;color:#6b7a90}
+.ava{display:inline-block;width:30px;line-height:30px;border-radius:50%;background:#0068ff;text-align:center;color:#fff;font-size:11px;font-weight:700;margin-right:8px}
+.card{background:#fff;padding:12px;border-radius:12px;margin-bottom:12px}
+.dnc{color:#b42318;font-weight:600}dialog{border:1px solid #d6dbe1;border-radius:14px;width:min(560px,88vw);background:#fff;color:inherit}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;background:#fff;border-top:1px solid #d6dbe1;z-index:1}
+nav button{flex:1 0 82px;border:0;border-radius:0;background:none;color:#5a6b81;font-size:13px;padding:14px 6px;border-top:3px solid transparent}
+nav button.on{color:#0068ff;background:#e5efff;border-top-color:#0068ff}
 </style>
 </head>
 <body>
