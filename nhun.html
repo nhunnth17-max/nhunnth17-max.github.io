@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nail CRM</title>
+<style>
+body{font:15px system-ui,sans-serif;margin:0;background:#f5f6f8;color:#1d2330}
+main{max-width:1100px;margin:auto;padding:16px}
+nav,.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+input,select,button,textarea{font:inherit;padding:8px;border:1px solid #ccd1da;border-radius:6px;background:#fff;color:inherit}
+button{cursor:pointer}button.main{background:#2457d6;color:#fff;border-color:#2457d6}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;background:#fff}
+td,th{padding:8px;border-bottom:1px solid #e4e7ec;text-align:left;white-space:nowrap}
+.card{background:#fff;padding:12px;border-radius:8px;margin-bottom:12px}
+.dnc{color:#b42318;font-weight:600}dialog{border:0;border-radius:10px;width:min(560px,92vw)}
+</style>
+</head>
+<body>
+<main>
+<form id="login" class="card row" hidden>
+  <input name="email" type="email" placeholder="Email" required>
+  <input name="password" type="password" placeholder="Mật khẩu" required>
+  <button class="main">Đăng nhập</button>
+</form>
+<div id="app" hidden>
+  <nav>
+    <button data-tab="salons">Tiệm</button><button data-tab="follow">Gọi lại</button>
+    <button data-tab="pipe">Pipeline</button><button data-tab="report">Báo cáo</button>
+    <button data-tab="dnc">Không gọi</button><button id="out">Thoát</button>
+  </nav>
+  <div id="view"></div>
+</div>
+<dialog id="dlg"></dialog>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// === ĐIỀN 2 GIÁ TRỊ NÀY (Supabase > Project Settings > API) ===
+const URL_ = 'https://wkzkprrqdlhhfedqstff.supabase.co';
+const KEY = 'sb_publishable_-9x9NZr-yBlZrhn0NufGPg_ErFrsryI';   // chỉ dùng anon key, KHÔNG dùng service_role
+
+const db = supabase.createClient(URL_, KEY);
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STAGE = {new:'Mới',called:'Đã gọi',interested:'Quan tâm',ordered:'Đặt hàng'};
+const ZONES = ['America/New_York','America/Chicago','America/Denver','America/Phoenix','America/Los_Angeles','America/Anchorage','Pacific/Honolulu'];
+let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [];
+
+const time = (d, tz) => new Date(d).toLocaleString('vi-VN', {timeZone: tz, dateStyle:'short', timeStyle:'short'});
+const money = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2});
+const phone = p => p.replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'');
+const opts = (list, sel) => list.map(([v,t]) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`).join('');
+
+async function run(query) {
+  const {data, error} = await query;
+  if (error) { alert(error.message); throw error; }
+  return data;
+}
+async function all(table, key = 'id') {   // Supabase trả tối đa 1000 dòng mỗi lần
+  let rows = [], from = 0, part;
+  do {
+    part = await run(db.from(table).select('*').order(key).range(from, from + 999));
+    rows = rows.concat(part); from += 1000;
+  } while (part.length === 1000);
+  return rows;
+}
+async function load() {
+  [S, C, O, M] = await Promise.all([all('salons'), all('calls'), all('orders'), all('members','user_id')]);
+  me = M.find(m => m.user_id === me.user_id);
+  render();
+}
+async function start() {
+  const {data:{session}} = await db.auth.getSession();
+  $('#login').hidden = !!session; $('#app').hidden = !session;
+  if (!session) return;
+  const m = await run(db.from('members').select('*').eq('user_id', session.user.id).maybeSingle());
+  if (!m) { alert('Tài khoản chưa được thêm vào team.'); await db.auth.signOut(); return location.reload(); }
+  me = m; await load();
+}
+
+function table(rows) {
+  return `<div class="scroll"><table><tr><th>Tiệm</th><th>Chủ</th><th>SĐT</th><th>Bang</th><th>Giờ ở tiệm</th><th>Trạng thái</th><th>Gọi lại (giờ tiệm)</th></tr>${
+  rows.map(s => `<tr><td><button data-id="${s.id}">${esc(s.name)}</button></td><td>${esc(s.owner)}</td><td>${esc(s.phone)}</td><td>${esc(s.state)}</td>
+  <td>${time(Date.now(), s.timezone)}</td><td class="${s.do_not_call?'dnc':''}">${s.do_not_call?'KHÔNG GỌI':STAGE[s.stage]}</td>
+  <td>${s.follow_up ? time(s.follow_up, s.timezone) : ''}</td></tr>`).join('') || '<tr><td colspan="7">Chưa có dữ liệu</td></tr>'}</table></div>`;
+}
+function list() {
+  const k = q.toLowerCase();
+  $('#list').innerHTML = table(S.filter(s => [s.name,s.owner,s.phone,s.state].join(' ').toLowerCase().includes(k)));
+}
+function render() {
+  const v = $('#view'), active = S.filter(s => !s.do_not_call);
+  if (tab === 'salons') {
+    v.innerHTML = `<div class="row"><input id="q" placeholder="Tìm tên, SĐT, bang" value="${esc(q)}"><button class="main" id="add">+ Thêm tiệm</button></div><div id="list"></div>`;
+    list();
+    $('#q').oninput = e => { q = e.target.value; list(); };
+    $('#add').onclick = () => edit();
+  } else if (tab === 'follow') {
+    v.innerHTML = table(active.filter(s => s.follow_up).sort((a,b) => new Date(a.follow_up) - new Date(b.follow_up)));
+  } else if (tab === 'pipe') {
+    v.innerHTML = Object.entries(STAGE).map(([k,t]) => { const r = active.filter(s => s.stage === k); return `<h3>${t} (${r.length})</h3>${table(r)}`; }).join('');
+  } else if (tab === 'dnc') {
+    v.innerHTML = table(S.filter(s => s.do_not_call));
+  } else {
+    const month = new Date().toISOString().slice(0,7);
+    v.innerHTML = `<h3>Tháng ${month} (theo giờ UTC)</h3><div class="scroll"><table><tr><th>Nhân viên</th><th>Cuộc gọi</th><th>Đơn</th><th>Doanh số</th></tr>${M.map(m => {
+      const mine = x => x.user_id === m.user_id && x.created_at.startsWith(month), o = O.filter(mine);
+      return `<tr><td>${esc(m.name)}</td><td>${C.filter(mine).length}</td><td>${o.length}</td><td>${money(o.reduce((a,x) => a + Number(x.amount), 0))}</td></tr>`;
+    }).join('')}</table></div>`;
+  }
+}
+
+function edit(s = {}) {
+  const d = $('#dlg'), who = id => esc(M.find(m => m.user_id === id)?.name);
+  const history = [
+    ...C.filter(c => c.salon_id === s.id).map(c => [c.created_at, `${who(c.user_id)}: ${esc(c.result)} ${esc(c.note)}`]),
+    ...O.filter(o => o.salon_id === s.id).map(o => [o.created_at, `${who(o.user_id)}: đơn ${money(o.amount)} ${esc(o.note)}`])
+  ].sort((a,b) => b[0].localeCompare(a[0]));
+  d.innerHTML = `<form id="f" class="row">
+    <input name="name" placeholder="Tên tiệm" required value="${esc(s.name)}">
+    <input name="owner" placeholder="Chủ tiệm" value="${esc(s.owner)}">
+    <input name="phone" placeholder="SĐT" required value="${esc(s.phone)}">
+    <input name="state" placeholder="Bang (TX, CA...)" maxlength="2" value="${esc(s.state)}">
+    <select name="timezone">${opts(ZONES.map(z => [z,z]), s.timezone || 'America/Chicago')}</select>
+    <select name="stage">${opts(Object.entries(STAGE), s.stage || 'new')}</select>
+    <label>Gọi lại (giờ máy bạn) <input name="follow_up" type="datetime-local"></label>
+    <label><input name="do_not_call" type="checkbox" ${s.do_not_call?'checked':''}> Không gọi</label>
+    <button class="main">Lưu</button><button type="button" id="close">Đóng</button></form>
+  ${s.id ? `${s.do_not_call ? '<p class="dnc">Tiệm yêu cầu không gọi.</p>' : `<form id="call" class="row">
+    <select name="result">${opts(['Không bắt máy','Đã nói chuyện','Hẹn gọi lại','Quan tâm','Từ chối'].map(x => [x,x]))}</select>
+    <input name="note" placeholder="Ghi chú"><button>Ghi cuộc gọi</button></form>`}
+    <form id="order" class="row"><input name="amount" type="number" step="0.01" min="0.01" placeholder="Số tiền $" required>
+    <input name="note" placeholder="Sản phẩm"><button>Thêm đơn</button></form>
+    <ul>${history.map(h => `<li>${time(h[0])} - ${h[1]}</li>`).join('')}</ul>` : ''}`;
+
+  const input = d.querySelector('[name=follow_up]');
+  if (s.follow_up) { const t = new Date(s.follow_up); input.value = new Date(t - t.getTimezoneOffset()*60000).toISOString().slice(0,16); }
+  const on = (id, fn) => { const f = d.querySelector(id); if (f) f.onsubmit = async e => {
+    e.preventDefault();
+    const btn = e.submitter; btn.disabled = true;
+    try { await fn(Object.fromEntries(new FormData(f))); d.close(); await load(); }
+    finally { btn.disabled = false; }
+  }; };
+  on('#f', v => {
+    const row = {...v, phone: phone(v.phone), state: v.state.toUpperCase(), do_not_call: !!v.do_not_call,
+      follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
+    return run(s.id ? db.from('salons').update(row).eq('id', s.id) : db.from('salons').insert(row));
+  });
+  on('#call', async v => {
+    await run(db.from('calls').insert({...v, salon_id: s.id}));
+    if (s.stage === 'new') await run(db.from('salons').update({stage:'called'}).eq('id', s.id));
+  });
+  on('#order', async v => {
+    await run(db.from('orders').insert({...v, salon_id: s.id}));
+    await run(db.from('salons').update({stage:'ordered'}).eq('id', s.id));
+  });
+  d.querySelector('#close').onclick = () => d.close();
+  d.showModal();
+}
+
+$('#login').onsubmit = async e => {
+  e.preventDefault();
+  const {error} = await db.auth.signInWithPassword(Object.fromEntries(new FormData(e.target)));
+  if (error) return alert(error.message);
+  start();
+};
+$('#out').onclick = async () => { await db.auth.signOut(); location.reload(); };
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.tab) { tab = b.dataset.tab; load(); }
+  if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id));
+});
+start();
+</script>
+</body>
+</html>
