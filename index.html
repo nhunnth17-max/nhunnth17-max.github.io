@@ -1,261 +1,173 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nail CRM</title>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Khách hàng · Ms Thy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{color-scheme:light}
-[hidden]{display:none!important}
-body{font:15px "Be Vietnam Pro",system-ui,sans-serif;margin:0;background:#f4f5f7;color:#081c36}
-main{max-width:1100px;margin:auto;padding:16px 16px 90px}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-input,select,button,textarea{font:inherit;padding:10px;border:1px solid #d6dbe1;border-radius:10px;background:#fff;color:inherit;max-width:100%}
-button{cursor:pointer}button.main{background:linear-gradient(135deg,#0068ff,#0057d6);border:0;color:#fff;font-weight:600}
-.head{display:flex;justify-content:space-between;align-items:center;gap:8px}.head h2{margin:0}
-#q{width:100%;box-sizing:border-box;margin:12px 0}
-.cards{display:flex;gap:12px;overflow-x:auto;margin-bottom:12px}
-.stat{flex:0 0 150px;text-align:left;background:linear-gradient(135deg,#fff,#e5efff)}
-.stat b{display:block;font-size:30px;color:#0068ff}.stat small{text-transform:uppercase;color:#5a6b81}
-.stat:nth-child(4n){background:linear-gradient(135deg,#fff,#dcebff)}.stat:nth-child(5n){background:linear-gradient(135deg,#fff,#eef4ff)}
-nav i{display:block;font-style:normal;font-size:18px}#out{color:#d93025}#menu{max-height:85vh}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid button{padding:14px 4px;font-size:13px;background:#f0f6ff}.grid button:disabled{opacity:.35}
-.stat.on{border:2px solid #0068ff}
-.scroll{overflow-x:auto;border:1px solid #d6dbe1;border-radius:12px}table{width:100%;border-collapse:collapse;background:#fff}
-td,th{padding:12px;border-bottom:1px solid #e8ebef;text-align:left;white-space:nowrap}
-th{background:#e5efff;text-transform:uppercase;font-size:13px;border-bottom:2px solid #0068ff}
-td button{background:none;border:0;padding:0;text-align:left}.code{font-family:monospace;color:#6b7a90}
-.ava{display:inline-block;width:30px;line-height:30px;border-radius:50%;background:#0068ff;text-align:center;color:#fff;font-size:11px;font-weight:700;margin-right:8px}
-.card{background:#fff;padding:12px;border-radius:12px;margin-bottom:12px}
-.dnc{color:#b42318;font-weight:600}dialog{border:1px solid #d6dbe1;border-radius:14px;width:min(560px,88vw);background:#fff;color:inherit}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;background:#fff;border-top:1px solid #d6dbe1;z-index:1}
-nav button{flex:1 0 82px;border:0;border-radius:0;background:none;color:#5a6b81;font-size:13px;padding:14px 6px;border-top:3px solid transparent}
-nav button.on{color:#0068ff;background:#e5efff;border-top-color:#0068ff}
+:root{--bg:#1a1442;--field:#2a2250;--line:#3d3570;--text:#f1eefc;--mute:#9a94c4;--accent:#5b4fe6;--gold:#f5c451;--green:#2dd4a7;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Be Vietnam Pro","Segoe UI",system-ui,sans-serif}
+body{display:flex;flex-direction:column;max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(145deg,#f08a6a,#e0607a);display:grid;place-items:center;font-weight:700;font-size:20px;flex:none}
+.hd{flex:1;min-width:0}
+.hd .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hd h1{margin:0;font-size:20px}
+.clock{border:1px solid #8a6d2c;background:#3a2f1c;color:var(--gold);border-radius:999px;padding:3px 12px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+.clock span{color:#c9a85a;font-family:inherit}
+.sub{color:var(--mute);font-size:14px;margin-top:2px}
+.x{width:44px;height:36px;border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:8px;font-size:18px;cursor:pointer}
+main{flex:1;overflow-y:auto;padding:20px 20px 24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+.full{grid-column:1/-1}
+label{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+input,select,textarea{width:100%;background:var(--field);border:1px solid var(--line);border-radius:12px;color:var(--text);font:inherit;font-size:17px;padding:13px 14px;outline:none}
+input::placeholder,textarea::placeholder{color:#6d669a}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,79,230,.3)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='20' fill='none' stroke='%23c9c4ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8l4-4 4 4M3 12l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+textarea{resize:vertical;min-height:110px;line-height:1.45}
+.phone{display:flex;align-items:center;gap:10px;min-height:48px;font-family:ui-monospace,Menlo,monospace;font-size:18px}
+.phone input{font-family:inherit;padding:8px 10px;font-size:16px}
+.ib{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none;text-decoration:none}
+.ib svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.call{background:#12362f;color:var(--green)}
+.edit{background:#33297a;color:#a99cff}
+footer{border-top:1px solid var(--line);background:var(--bg);padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
+.bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.btn{height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--field);color:var(--text);font:inherit;font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn:disabled{opacity:.4;cursor:default}
+.nav{width:54px;justify-content:center;padding:0}
+.pg{color:var(--mute);min-width:44px;text-align:center}
+.help{border-color:var(--accent);color:#b3a9ff;background:transparent}
+.inv{border-color:#8a6d2c;color:var(--gold);background:transparent}
+.save{background:var(--accent);border-color:var(--accent);color:#fff}
+.spacer{flex:1}
+#toast{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);background:#2dd4a7;color:#06241c;padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<header>
+  <div class="avatar" id="av">?</div>
+  <div class="hd">
+    <div class="row"><h1 id="title">Khách hàng</h1><div class="clock" id="clock">--:-- <span id="tzn"></span></div></div>
+    <div class="sub" id="sub">Tên tiệm · Mã KH</div>
+  </div>
+  <button class="x" aria-label="Đóng" onclick="toast('Đã đóng')">✕</button>
+</header>
+
 <main>
-<form id="login" class="card row" hidden>
-  <input name="email" type="email" placeholder="Email" required>
-  <input name="password" type="password" placeholder="Mật khẩu" required>
-  <button class="main">Đăng nhập</button>
-</form>
-<div id="app" hidden>
-  <nav><button id="apps"><i>▦</i>Apps</button><button data-tab="salons"><i>👥</i>Khách hàng</button><button data-tab="campaign"><i>📣</i>Campaign</button><button data-tab="potential"><i>⭐</i>Tiềm năng</button><button data-tab="order"><i>🏆</i>Order</button><button data-tab="pipe"><i>🗂️</i>Pipeline</button><button data-tab="approve"><i>🕒</i>Chờ duyệt</button><button data-tab="report"><i>📊</i>Dashboard</button><button data-tab="follow"><i>🔔</i>Cảnh báo</button><button data-tab="product"><i>📦</i>Sản phẩm</button><button data-tab="daily"><i>📅</i>Daily</button><button data-tab="contest"><i>🎲</i>Contest</button><button data-tab="help"><i>📖</i>Hướng dẫn</button><button data-tab="notice"><i>📢</i>Thông báo</button><button data-tab="system"><i>⚙️</i>System</button><button data-tab="chat"><i>💬</i>Chat</button><button data-tab="dnc"><i>🚫</i>Không gọi</button><button id="switch"><i>🔁</i>Chuyển tài khoản</button><button id="out"><i>🚪</i>Đăng xuất</button></nav>
-  <div id="view"></div>
-</div>
-<dialog id="dlg"></dialog>
-<dialog id="menu"><h3>Nail CRM</h3><div class="grid"><button data-tab="salons">👥<br>Khách hàng</button><button data-tab="campaign">📣<br>Campaign</button><button data-tab="potential">⭐<br>Tiềm năng</button><button data-tab="order">🏆<br>Order</button><button data-tab="pipe">🗂️<br>Pipeline</button><button data-tab="approve">🕒<br>Chờ duyệt</button><button data-tab="report">📊<br>Dashboard</button><button data-tab="follow">🔔<br>Cảnh báo</button><button data-tab="product">📦<br>Sản phẩm</button><button data-tab="daily">📅<br>Daily</button><button data-tab="contest">🎲<br>Contest</button><button data-tab="help">📖<br>Hướng dẫn</button><button data-tab="notice">📢<br>Thông báo</button><button data-tab="system">⚙️<br>System</button><button data-tab="chat">💬<br>Chat</button><button data-tab="dnc">🚫<br>Không gọi</button></div></dialog>
+  <div class="grid">
+    <div><label for="biz">Business name</label><input id="biz"></div>
+    <div><label for="addr">Address</label><input id="addr"></div>
+    <div><label for="city">City</label><input id="city" placeholder="Thành phố"></div>
+    <div><label for="state">State</label>
+      <select id="state"></select></div>
+    <div><label for="zip">Zipcode</label><input id="zip" inputmode="numeric" maxlength="10"></div>
+    <div></div>
+
+    <div>
+      <label>Business phone</label>
+      <div class="phone" data-phone=""></div>
+    </div>
+    <div><label for="cn">Customer name</label><input id="cn"></div>
+
+    <div>
+      <label>Cellphone</label>
+      <div class="phone" data-phone=""></div>
+    </div>
+    <div><label for="cn2">Customer name 2</label><input id="cn2"></div>
+
+    <div class="full">
+      <label>Cellphone 2</label>
+      <div class="phone" data-phone=""></div>
+    </div>
+
+    <div class="full"><label for="desc">Description</label>
+      <textarea id="desc"></textarea></div>
+
+    <div class="full"><label for="result">Kết quả cuộc gọi</label>
+      <select id="result">
+        <option value="">-- Chọn --</option>
+        <option>Quan tâm</option>
+        <option>Hẹn gọi lại</option>
+        <option>Không nghe máy</option>
+        <option>Sai số</option>
+        <option>Từ chối</option>
+        <option>Đã chốt đơn</option>
+      </select></div>
+
+    <div class="full"><label for="note">Ghi chú</label>
+      <textarea id="note" placeholder="Nội dung cuộc gọi..."></textarea></div>
+  </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+
+<footer>
+  <div class="bar">
+    <button class="btn nav" id="prev" aria-label="Khách trước">◀</button>
+    <span class="pg" id="pg">1/60</span>
+    <button class="btn nav" id="next" aria-label="Khách sau">▶</button>
+    <button class="btn" onclick="toast('Đã đóng')">Đóng</button>
+    <button class="btn help" onclick="toast('Đã gửi yêu cầu hỗ trợ')">
+      <svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v5H5a1 1 0 01-1-1zM20 14h-3v5h2a1 1 0 001-1z"/></svg>Nhờ hỗ trợ</button>
+  </div>
+  <div class="bar">
+    <button class="btn inv" onclick="toast('Đang tạo invoice…')">
+      <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M9 13h6M9 17h6"/></svg>Tạo Invoice</button>
+    <button class="btn save" onclick="save()">
+      <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/></svg>Lưu</button>
+  </div>
+</footer>
+<div id="toast"></div>
+
 <script>
-// === ĐIỀN 2 GIÁ TRỊ NÀY (Supabase > Project Settings > API) ===
-const URL_ = 'https://wkzkprrqdlhhfedqstff.supabase.co';
-const KEY = 'sb_publishable_-9x9NZr-yBlZrhn0NufGPg_ErFrsryI';   // chỉ dùng anon key, KHÔNG dùng service_role
+const STATES={Alabama:"America/Chicago",Alaska:"America/Anchorage",Arizona:"America/Phoenix",California:"America/Los_Angeles",Colorado:"America/Denver",Florida:"America/New_York",Georgia:"America/New_York",Illinois:"America/Chicago",Nevada:"America/Los_Angeles","New York":"America/New_York",Oregon:"America/Los_Angeles",Texas:"America/Chicago",Washington:"America/Los_Angeles"};
+const $=id=>document.getElementById(id);
+const sel=$("state");
+sel.innerHTML='<option value="">-- Chọn --</option>'+Object.keys(STATES).map(s=>`<option>${s}</option>`).join("");
 
-const db = supabase.createClient(URL_, KEY);
-const $ = s => document.querySelector(s);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STAGE = {new:'Mới',called:'Đã gọi',interested:'Quan tâm',ordered:'Đặt hàng'};
-const ZONES = ['America/New_York','America/Chicago','America/Denver','America/Phoenix','America/Los_Angeles','America/Anchorage','Pacific/Honolulu'];
-const POT = ['Hot','Warm','Cold'];
-const PRODUCTS = ['Pedicure Spa & Package','Furniture','Padset','Headspa Bed','Nail Supply','Acc & Part'];
-const FIELDS = [['stage','Status'],['potential','Potential'],['lead_source','Lead'],['brand','Brand'],['reason','Reason']];
-const REASONS = [
-  'R1 - Khách chưa có nhu cầu',
-  'R2 - Khách bận',
-  'R3 - Franchise không cho mua ngoài',
-  'R4 - Đổi nhu cầu',
-  'R5 - Có nhu cầu nhưng rất xa',
-  'R6 - Chỉ tham khảo',
-  'R7 - Không muốn tiếp tục',
-  'R8 - Giá chưa phù hợp',
-  'R9 - Đang so sánh',
-  'R10 - Ngại mua hàng xa',
-  'R11 - Lo ngại lắp đặt',
-  'R12 - Mới thay nội thất',
-  'R13 - Chủ đã bán tiệm',
-  'R14 - Đang build tiệm/Remodel tiệm',
-  'R15 - Chỉ dùng thương hiệu khác',
-  'R16 - Sai số',
-  'R17 - Không gặp người quyết định',
-  'R18 - Chưa có ngân sách',
-  'R19 - Đang làm với vendor khác',
-  'R20 - Khó giao tiếp'
-];
-const filter = {};
-const overdue = s => s.follow_up && new Date(s.follow_up) < new Date() && !s.do_not_call;
-const monthOf = s => s.created_at.slice(0,7);
-const values = k => [...new Set(S.map(s => s[k]).filter(Boolean))].sort();
-const initials = id => esc((M.find(m => m.user_id === id)?.name || '?').slice(0,2).toUpperCase());
-let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [];
-
-const time = (d, tz) => new Date(d).toLocaleString('vi-VN', {timeZone: tz, dateStyle:'short', timeStyle:'short'});
-const money = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2});
-const phone = p => p.replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'');
-const opts = (list, sel) => list.map(([v,t]) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`).join('');
-
-async function run(query) {
-  const {data, error} = await query;
-  if (error) { alert(error.message); throw error; }
-  return data;
+function tick(){
+  const tz=STATES[sel.value];
+  if(!tz){$("clock").firstChild.textContent="--:-- ";$("tzn").textContent="";return}
+  const t=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",hour12:true}).format(new Date());
+  $("clock").firstChild.textContent=t+" ";
+  $("tzn").textContent="("+sel.value+")";
 }
-async function all(table, key = 'id') {   // Supabase trả tối đa 1000 dòng mỗi lần
-  let rows = [], from = 0, part;
-  do {
-    part = await run(db.from(table).select('*').order(key).range(from, from + 999));
-    rows = rows.concat(part); from += 1000;
-  } while (part.length === 1000);
-  return rows;
-}
-async function load() {
-  [S, C, O, M] = await Promise.all([all('salons'), all('calls'), all('orders'), all('members','user_id')]);
-  me = M.find(m => m.user_id === me.user_id);
+sel.onchange=tick;tick();setInterval(tick,15000);
+
+const ICON_CALL='<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>';
+const ICON_EDIT='<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16zM13.5 6.5l4 4"/></svg>';
+document.querySelectorAll(".phone").forEach(el=>{
+  let num=el.dataset.phone;
+  const render=()=>{
+    el.innerHTML=`<span>${num||"—"}</span>`+(num?`<a class="ib call" href="tel:${num}" aria-label="Gọi">${ICON_CALL}</a>`:"")+`<button class="ib edit" aria-label="Sửa số">${ICON_EDIT}</button>`;
+    el.querySelector(".edit").onclick=()=>{
+      el.innerHTML=`<input inputmode="tel" value="${num}" aria-label="Số điện thoại">`;
+      const i=el.querySelector("input");i.focus();
+      const done=()=>{num=i.value.replace(/[^\d+]/g,"");render()};
+      i.onblur=done;i.onkeydown=e=>{if(e.key==="Enter")i.blur()};
+    };
+  };
   render();
-}
-async function start() {
-  const {data:{session}} = await db.auth.getSession();
-  $('#login').hidden = !!session; $('#app').hidden = !session;
-  if (!session) return;
-  const m = await run(db.from('members').select('*').eq('user_id', session.user.id).maybeSingle());
-  if (!m) { alert('Tài khoản chưa được thêm vào team.'); await db.auth.signOut(); return location.reload(); }
-  me = m; await load();
-}
-
-function table(rows) {
-  return `<div class="scroll"><table><tr><th>Mã KH</th><th>Business name</th><th>Customer</th><th>SĐT</th><th>Bang</th><th>Potential</th><th>Status</th><th>Giờ ở tiệm</th><th>Lead</th><th>Brand</th><th>Gọi lại (giờ tiệm)</th></tr>${
-  rows.map(s => `<tr><td class="code">${esc(s.code)}</td><td><button data-id="${s.id}">${esc(s.name)}</button></td>
-  <td><span class="ava">${initials(s.assigned_to)}</span>${esc(s.owner)}</td><td>${esc(s.phone)}</td><td>${esc(s.state)}</td>
-  <td>${esc(s.potential)}</td><td class="${s.do_not_call?'dnc':''}">${s.do_not_call?'KHÔNG GỌI':STAGE[s.stage]}</td>
-  <td>${time(Date.now(), s.timezone)}</td><td>${esc(s.lead_source)}</td><td>${esc(s.brand)}</td>
-  <td class="${overdue(s)?'dnc':''}">${s.follow_up ? time(s.follow_up, s.timezone) : ''}</td></tr>`).join('') || '<tr><td colspan="11">Chưa có dữ liệu</td></tr>'}</table></div>`;
-}
-function list() {
-  const k = q.toLowerCase();
-  const rows = S.filter(s => [s.code,s.name,s.owner,s.phone,s.state].join(' ').toLowerCase().includes(k)
-    && FIELDS.every(([f]) => !filter[f] || s[f] === filter[f])
-    && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
-  $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
-}
-function render() {
-  const v = $('#view'), active = S.filter(s => !s.do_not_call);
-  document.querySelectorAll('nav [data-tab]').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
-  if (tab === 'salons') {
-    const card = (label, n, stage) => `<button class="stat ${stage !== null && (filter.stage || '') === stage ? 'on' : ''}" ${stage === null ? '' : `data-stage="${stage}"`}><small>${esc(label)}</small><b>${n}</b></button>`;
-    const sel = (f, label, list) => `<select data-f="${f}">${opts([['',`Tất cả ${label}`], ...list], filter[f] || '')}</select>`;
-    v.innerHTML = `<div class="head"><h2>Khách hàng</h2><button class="main" id="add">+ Thêm khách</button></div>
-      <input id="q" placeholder="Tìm tên, SĐT, mã KH, bang..." value="${esc(q)}">
-      <div class="cards">${card('Tổng data', S.length, '')}${card('Closedeal', S.filter(s => s.stage === 'ordered').length, 'ordered')}
-        ${card('Được giao cho tôi', S.filter(s => s.assigned_to === me.user_id).length, null)}
-        ${[...new Set([...PRODUCTS, ...values('brand')])].map(b => card(b, S.filter(s => s.brand === b).length, null)).join('')}</div>
-      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
-        ${sel('late', 'hạn gọi', [['1','Chỉ quá hạn']])}${sel('month', 'tháng', [...new Set(S.map(monthOf))].sort().map(x => [x,x]))}</div>
-      <div id="list"></div>`;
-    list();
-    $('#q').oninput = e => { q = e.target.value; list(); };
-    $('#add').onclick = () => edit();
-    v.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { filter[x.dataset.f] = x.value; render(); });
-    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; render(); });
-  } else if (tab === 'campaign') {
-    v.innerHTML = values('campaign').map(c => { const r = S.filter(s => s.campaign === c); return `<h3>${esc(c)} (${r.length})</h3>${table(r)}`; }).join('')
-      || '<p>Chưa có campaign. Mở một khách và điền ô Campaign.</p>';
-  } else if (tab === 'potential') {
-    v.innerHTML = POT.map(p => { const r = active.filter(s => s.potential === p); return `<h3>${p} (${r.length})</h3>${table(r)}`; }).join('');
-  } else if (tab === 'order') {
-    v.innerHTML = `<h2>Order</h2><div class="scroll"><table><tr><th>Ngày</th><th>Tiệm</th><th>Số tiền</th><th>Sản phẩm</th><th>Nhân viên</th></tr>${[...O].reverse().map(o => {
-      const x = S.find(s => s.id === o.salon_id);
-      return `<tr><td>${time(o.created_at)}</td><td><button data-id="${o.salon_id}">${esc(x?.name)}</button></td><td>${money(o.amount)}</td><td>${esc(o.note)}</td><td>${esc(M.find(m => m.user_id === o.user_id)?.name)}</td></tr>`;
-    }).join('') || '<tr><td colspan="5">Chưa có đơn</td></tr>'}</table></div>`;
-  } else if (tab === 'follow') {
-    v.innerHTML = table(active.filter(s => s.follow_up).sort((a,b) => new Date(a.follow_up) - new Date(b.follow_up)));
-  } else if (tab === 'pipe') {
-    v.innerHTML = Object.entries(STAGE).map(([k,t]) => { const r = active.filter(s => s.stage === k); return `<h3>${t} (${r.length})</h3>${table(r)}`; }).join('');
-  } else if (['approve','product','daily','contest','notice','chat'].includes(tab)) {
-    v.innerHTML = `<h2>${document.querySelector(`nav [data-tab=${tab}]`).lastChild.textContent}</h2><div class="card">Mục này chưa làm.</div>`;
-  } else if (tab === 'help') {
-    v.innerHTML = `<h2>Hướng dẫn</h2><div class="card"><p>Thêm khách: vào Khách hàng, bấm "+ Thêm khách".</p><p>Sửa khách, ghi cuộc gọi, thêm đơn: bấm vào tên tiệm.</p><p>Lịch gọi lại: điền ô "Gọi lại", xem ở Cảnh báo.</p><p>Khách yêu cầu ngừng liên hệ: tick "Không gọi".</p></div>`;
-  } else if (tab === 'system') {
-    v.innerHTML = `<h2>System</h2><div class="scroll"><table><tr><th>Thành viên</th><th>Quyền</th></tr>${M.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.role)}</td></tr>`).join('')}</table></div>`;
-  } else if (tab === 'dnc') {
-    v.innerHTML = table(S.filter(s => s.do_not_call));
-  } else {
-    const month = new Date().toISOString().slice(0,7);
-    v.innerHTML = `<h3>Tháng ${month} (theo giờ UTC)</h3><div class="scroll"><table><tr><th>Nhân viên</th><th>Cuộc gọi</th><th>Đơn</th><th>Doanh số</th></tr>${M.map(m => {
-      const mine = x => x.user_id === m.user_id && x.created_at.startsWith(month), o = O.filter(mine);
-      return `<tr><td>${esc(m.name)}</td><td>${C.filter(mine).length}</td><td>${o.length}</td><td>${money(o.reduce((a,x) => a + Number(x.amount), 0))}</td></tr>`;
-    }).join('')}</table></div>`;
-  }
-}
-
-function edit(s = {}) {
-  const d = $('#dlg'), who = id => esc(M.find(m => m.user_id === id)?.name);
-  const history = [
-    ...C.filter(c => c.salon_id === s.id).map(c => [c.created_at, `${who(c.user_id)}: ${esc(c.result)} ${esc(c.note)}`]),
-    ...O.filter(o => o.salon_id === s.id).map(o => [o.created_at, `${who(o.user_id)}: đơn ${money(o.amount)} ${esc(o.note)}`])
-  ].sort((a,b) => b[0].localeCompare(a[0]));
-  d.innerHTML = `<form id="f" class="row">
-    <input name="name" placeholder="Tên tiệm" required value="${esc(s.name)}">
-    <input name="owner" placeholder="Chủ tiệm" value="${esc(s.owner)}">
-    <input name="phone" placeholder="SĐT" required value="${esc(s.phone)}">
-    <input name="state" placeholder="Bang (TX, CA...)" maxlength="2" value="${esc(s.state)}">
-    <select name="timezone">${opts(ZONES.map(z => [z,z]), s.timezone || 'America/Chicago')}</select>
-    <select name="stage">${opts(Object.entries(STAGE), s.stage || 'new')}</select>
-    <select name="potential">${opts([['','Potential'], ...POT.map(x => [x,x])], s.potential || '')}</select>
-    ${[['lead_source','Lead (nguồn)'],['brand','Brand / sản phẩm'],['campaign','Campaign']].map(([f,p]) => `<input name="${f}" placeholder="${p}" value="${esc(s[f])}" ${f==='brand'?'list="products"':''}>`).join('')}
-    <select name="reason">${opts([['','Reason (lý do)'], ...REASONS.map(x => [x,x])], s.reason || '')}</select>
-    <datalist id="products">${PRODUCTS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
-    <select name="assigned_to">${opts(M.map(m => [m.user_id, 'Giao cho ' + esc(m.name)]), s.assigned_to || me.user_id)}</select>
-    <label>Gọi lại (giờ máy bạn) <input name="follow_up" type="datetime-local"></label>
-    <label><input name="do_not_call" type="checkbox" ${s.do_not_call?'checked':''}> Không gọi</label>
-    <button class="main">Lưu</button><button type="button" id="close">Đóng</button></form>
-  ${s.id ? `${s.do_not_call ? '<p class="dnc">Tiệm yêu cầu không gọi.</p>' : `<form id="call" class="row">
-    <select name="result">${opts(['Không bắt máy','Đã nói chuyện','Hẹn gọi lại','Quan tâm','Từ chối'].map(x => [x,x]))}</select>
-    <input name="note" placeholder="Ghi chú"><button>Ghi cuộc gọi</button></form>`}
-    <form id="order" class="row"><input name="amount" type="number" step="0.01" min="0.01" placeholder="Số tiền $" required>
-    <input name="note" placeholder="Sản phẩm"><button>Thêm đơn</button></form>
-    <ul>${history.map(h => `<li>${time(h[0])} - ${h[1]}</li>`).join('')}</ul>` : ''}`;
-
-  const input = d.querySelector('[name=follow_up]');
-  if (s.follow_up) { const t = new Date(s.follow_up); input.value = new Date(t - t.getTimezoneOffset()*60000).toISOString().slice(0,16); }
-  const on = (id, fn) => { const f = d.querySelector(id); if (f) f.onsubmit = async e => {
-    e.preventDefault();
-    const btn = e.submitter; btn.disabled = true;
-    try { await fn(Object.fromEntries(new FormData(f))); d.close(); await load(); }
-    finally { btn.disabled = false; }
-  }; };
-  on('#f', v => {
-    for (const f of ['potential','lead_source','brand','reason','campaign']) v[f] = v[f]?.trim() || null;
-    const row = {...v, phone: phone(v.phone), state: v.state.toUpperCase(), do_not_call: !!v.do_not_call,
-      follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
-    return run(s.id ? db.from('salons').update(row).eq('id', s.id) : db.from('salons').insert(row));
-  });
-  on('#call', async v => {
-    await run(db.from('calls').insert({...v, salon_id: s.id}));
-    if (s.stage === 'new') await run(db.from('salons').update({stage:'called'}).eq('id', s.id));
-  });
-  on('#order', async v => {
-    await run(db.from('orders').insert({...v, salon_id: s.id}));
-    await run(db.from('salons').update({stage:'ordered'}).eq('id', s.id));
-  });
-  d.querySelector('#close').onclick = () => d.close();
-  d.showModal();
-}
-
-$('#login').onsubmit = async e => {
-  e.preventDefault();
-  const {error} = await db.auth.signInWithPassword(Object.fromEntries(new FormData(e.target)));
-  if (error) return alert(error.message);
-  start();
-};
-$('#out').onclick = $('#switch').onclick = async () => { await db.auth.signOut({scope:'local'}); location.reload(); };
-document.addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  if (b.id === 'apps') $('#menu').showModal();
-  if (b.dataset.tab) { $('#menu').close(); tab = b.dataset.tab; load(); }
-  if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id));
 });
-start();
+
+let idx=1;const total=60;
+function page(d){idx=Math.min(total,Math.max(1,idx+d));$("pg").textContent=idx+"/"+total;$("prev").disabled=idx===1;$("next").disabled=idx===total}
+$("prev").onclick=()=>page(-1);$("next").onclick=()=>page(1);page(0);
+
+function syncHead(){
+  $("title").textContent=$("cn").value||"Khách hàng";
+  $("sub").textContent=($("biz").value||"Tên tiệm")+" · Mã KH";
+  $("av").textContent=($("biz").value.match(/\b\w/g)||[]).slice(0,2).join("").toUpperCase()||"?";
+}
+["cn","biz"].forEach(i=>$(i).addEventListener("input",syncHead));
+
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
+function save(){toast("Đã lưu")}
 </script>
 </body>
 </html>
