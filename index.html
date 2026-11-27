@@ -32,6 +32,26 @@ td button{background:none;border:0;padding:0;text-align:left}.code{font-family:m
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;background:#fff;border-top:1px solid #d6dbe1;z-index:1}
 nav button{flex:1 0 82px;border:0;border-radius:0;background:none;color:#5a6b81;font-size:13px;padding:14px 6px;border-top:3px solid transparent}
 nav button.on{color:#0068ff;background:#e5efff;border-top-color:#0068ff}
+
+#dlg{width:min(640px,100vw);height:100dvh;max-height:100dvh;padding:0;border:0;border-radius:0;background:#1a1440;color:#e9e6ff}
+#dlg[open]{display:flex;flex-direction:column}
+#dlg input,#dlg select,#dlg textarea{width:100%;box-sizing:border-box;background:#2a2250;border:1px solid #3d3470;color:#e9e6ff}
+#dlg option{background:#2a2250}#dlg textarea{resize:vertical}
+#dlg input[type=checkbox]{width:auto;margin-right:8px}
+.dh{display:flex;gap:12px;align-items:center;padding:16px;border-bottom:1px solid #2f2860}.dt{flex:1}.dt b{font-size:22px}
+.dt small{display:block;color:#9a94c4;margin-top:4px}
+.clk{margin-left:8px;border:1px solid #8a6d2f;color:#f5c451;background:#3a2f1f;border-radius:99px;padding:3px 12px;font:14px monospace;white-space:nowrap}
+.ava.big{width:52px;line-height:52px;font-size:18px;margin:0;background:linear-gradient(135deg,#f08a6c,#e66f9a)}
+.db{flex:1;overflow:auto;padding:8px 16px 16px}.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.full{grid-column:1/-1}
+.fl{display:block}.fl span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9a94c4;margin:14px 0 6px}
+.tel{display:flex;align-items:center;gap:8px;min-height:50px}
+#dlg .tel input[readonly]{background:none;border:0;padding:0;width:11ch;font:17px monospace}
+.ic{width:42px;height:42px;border-radius:50%;padding:0;display:inline-grid;place-items:center;background:#2a2250;border:0;color:#a99dff;text-decoration:none}
+.ic.call{background:#12353a;color:#2dd4a7}.sq{border-radius:10px;padding:0 14px;height:42px;background:none;border:1px solid #3d3470;color:inherit}
+.df{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;padding:12px 16px;border-top:1px solid #2f2860}
+.df button{background:#231b52;border:1px solid #3d3470;color:#e9e6ff;padding:12px 16px}.df button:disabled{opacity:.4}.df span{color:#9a94c4}
+.df .main{background:linear-gradient(135deg,#6b5cff,#5846e8);border:0}#help{border-color:#6b5cff!important;color:#a99dff!important}#inv{border-color:#8a6d2f!important;color:#f5c451!important}
+#dlg li{margin:6px 0;color:#c9c4ee}
 </style>
 </head>
 <body>
@@ -188,58 +208,81 @@ function render() {
   }
 }
 
-function edit(s = {}) {
+const TZ = {N:'America/New_York',C:'America/Chicago',D:'America/Denver',L:'America/Los_Angeles',P:'America/Phoenix',A:'America/Anchorage',H:'Pacific/Honolulu'};
+const ST = Object.fromEntries('AL|Alabama|C,AK|Alaska|A,AZ|Arizona|P,AR|Arkansas|C,CA|California|L,CO|Colorado|D,CT|Connecticut|N,DE|Delaware|N,DC|District of Columbia|N,FL|Florida|N,GA|Georgia|N,HI|Hawaii|H,ID|Idaho|D,IL|Illinois|C,IN|Indiana|N,IA|Iowa|C,KS|Kansas|C,KY|Kentucky|N,LA|Louisiana|C,ME|Maine|N,MD|Maryland|N,MA|Massachusetts|N,MI|Michigan|N,MN|Minnesota|C,MS|Mississippi|C,MO|Missouri|C,MT|Montana|D,NE|Nebraska|C,NV|Nevada|L,NH|New Hampshire|N,NJ|New Jersey|N,NM|New Mexico|D,NY|New York|N,NC|North Carolina|N,ND|North Dakota|C,OH|Ohio|N,OK|Oklahoma|C,OR|Oregon|L,PA|Pennsylvania|N,RI|Rhode Island|N,SC|South Carolina|N,SD|South Dakota|C,TN|Tennessee|C,TX|Texas|C,UT|Utah|D,VT|Vermont|N,VA|Virginia|N,WA|Washington|L,WV|West Virginia|N,WI|Wisconsin|C,WY|Wyoming|D'.split(',').map(x => { const [c, n, z] = x.split('|'); return [c, [n, TZ[z]]]; }));
+const CALLS = ['Không bắt máy','Đã nói chuyện','Hẹn gọi lại','Quan tâm','Từ chối'];
+
+function edit(s = {}, ids = []) {
   const d = $('#dlg'), who = id => esc(M.find(m => m.user_id === id)?.name);
   const history = [
     ...C.filter(c => c.salon_id === s.id).map(c => [c.created_at, `${who(c.user_id)}: ${esc(c.result)} ${esc(c.note)}`]),
     ...O.filter(o => o.salon_id === s.id).map(o => [o.created_at, `${who(o.user_id)}: đơn ${money(o.amount)} ${esc(o.note)}`])
   ].sort((a,b) => b[0].localeCompare(a[0]));
-  d.innerHTML = `<form id="f" class="row">
-    <input name="name" placeholder="Tên tiệm" required value="${esc(s.name)}">
-    <input name="owner" placeholder="Chủ tiệm" value="${esc(s.owner)}">
-    <input name="phone" placeholder="SĐT" required value="${esc(s.phone)}">
-    <input name="state" placeholder="Bang (TX, CA...)" maxlength="2" value="${esc(s.state)}">
-    <select name="timezone">${opts(ZONES.map(z => [z,z]), s.timezone || 'America/Chicago')}</select>
-    <select name="stage">${opts(Object.entries(STAGE), s.stage || 'new')}</select>
-    <select name="potential">${opts([['','Potential'], ...POT.map(x => [x,x])], s.potential || '')}</select>
-    ${[['lead_source','Lead (nguồn)'],['brand','Brand / sản phẩm'],['campaign','Campaign']].map(([f,p]) => `<input name="${f}" placeholder="${p}" value="${esc(s[f])}" ${f==='brand'?'list="products"':''}>`).join('')}
-    <select name="reason">${opts([['','Reason (lý do)'], ...REASONS.map(x => [x,x])], s.reason || '')}</select>
+  const i = ids.indexOf(String(s.id)), go = n => edit(S.find(x => x.id == ids[i + n]), ids);
+  const fl = (label, html, cls = '') => `<label class="fl ${cls}"><span>${label}</span>${html}</label>`;
+  const inp = (n, label, ph = '') => fl(label, `<input name="${n}" placeholder="${ph}" value="${esc(s[n])}" ${n === 'name' ? 'required' : ''} ${n === 'brand' ? 'list="products"' : ''}>`);
+  const tel = (n, label) => fl(label, `<div class="tel"><input name="${n}" ${n === 'phone' ? 'required' : ''} value="${esc(s[n])}" ${s[n] ? 'readonly' : ''}>${s[n] && !s.do_not_call ? `<a class="ic call" href="tel:+1${esc(s[n])}">📞</a>` : ''}<button type="button" class="ic" data-edit>✎</button></div>`);
+  const sel = (n, label, list, v, cls) => fl(label, `<select name="${n}">${opts(list, v)}</select>`, cls);
+  const zone = s.timezone || ST[(s.state || '').toUpperCase()]?.[1] || 'America/Chicago';
+  d.innerHTML = `<header class="dh"><span class="ava big">${initials(s.assigned_to || me.user_id)}</span>
+    <div class="dt"><b>${esc(s.owner || s.name || 'Khách mới')}</b><span class="clk" id="clk"></span><small>${esc(s.name)}${s.code ? ' · ' + esc(s.code) : ''}</small></div>
+    <button type="button" class="sq" data-close>✕</button></header>
+  <div class="db"><form id="f" class="g">
+    ${inp('name','Business name')}${inp('address','Address')}
+    ${inp('city','City','Thành phố')}${sel('state','State',[['','Chọn bang'], ...Object.entries(ST).map(([c,[n]]) => [c,n])], (s.state || '').toUpperCase())}
+    ${inp('zip','Zipcode')}<span></span>
+    ${tel('phone','Business phone')}${inp('owner','Customer name')}
+    ${tel('cellphone','Cellphone')}${inp('owner2','Customer name 2')}
+    ${tel('cellphone2','Cellphone 2')}<span></span>
+    ${fl('Description', `<textarea name="description" rows="5">${esc(s.description)}</textarea>`, 'full')}
+    ${s.id && !s.do_not_call ? sel('result','Kết quả cuộc gọi',[['','-- Chọn --'], ...CALLS.map(x => [x,x])],'','full') + fl('Ghi chú', '<textarea name="note" rows="3" placeholder="Nội dung cuộc gọi..."></textarea>', 'full') : ''}
+    ${sel('stage','Status',Object.entries(STAGE), s.stage || 'new')}${sel('potential','Potential',[['','—'], ...POT.map(x => [x,x])], s.potential || '')}
+    ${inp('lead_source','Lead (nguồn)')}${inp('brand','Brand / sản phẩm')}
+    ${inp('campaign','Campaign')}${sel('reason','Reason (lý do)',[['','—'], ...REASONS.map(x => [x,x])], s.reason || '')}
+    ${sel('assigned_to','Giao cho',M.map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
+    <label class="full" style="margin-top:14px"><input type="checkbox" name="do_not_call" ${s.do_not_call ? 'checked' : ''}> Không gọi</label>
+    <input type="hidden" name="timezone" value="${zone}">
     <datalist id="products">${PRODUCTS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
-    <select name="assigned_to">${opts(M.map(m => [m.user_id, 'Giao cho ' + esc(m.name)]), s.assigned_to || me.user_id)}</select>
-    <label>Gọi lại (giờ máy bạn) <input name="follow_up" type="datetime-local"></label>
-    <label><input name="do_not_call" type="checkbox" ${s.do_not_call?'checked':''}> Không gọi</label>
-    <button class="main">Lưu</button><button type="button" id="close">Đóng</button></form>
-  ${s.id ? `${s.do_not_call ? '<p class="dnc">Tiệm yêu cầu không gọi.</p>' : `<form id="call" class="row">
-    <select name="result">${opts(['Không bắt máy','Đã nói chuyện','Hẹn gọi lại','Quan tâm','Từ chối'].map(x => [x,x]))}</select>
-    <input name="note" placeholder="Ghi chú"><button>Ghi cuộc gọi</button></form>`}
-    <form id="order" class="row"><input name="amount" type="number" step="0.01" min="0.01" placeholder="Số tiền $" required>
-    <input name="note" placeholder="Sản phẩm"><button>Thêm đơn</button></form>
-    <ul>${history.map(h => `<li>${time(h[0])} - ${h[1]}</li>`).join('')}</ul>` : ''}`;
+  </form>
+  <form id="order" class="g" hidden>${fl('Số tiền $','<input name="amount" type="number" step="0.01" min="0.01" required>')}${fl('Sản phẩm','<input name="note">')}<button class="main full" style="margin-top:12px">Thêm đơn</button></form>
+  ${s.id ? `<h4>Lịch sử</h4><ul>${history.map(h => `<li>${time(h[0])} - ${h[1]}</li>`).join('')}</ul>` : ''}</div>
+  <footer class="df">${i >= 0 && ids.length > 1 ? `<button type="button" id="prev" ${i < 1 ? 'disabled' : ''}>◀</button><span>${i + 1}/${ids.length}</span><button type="button" id="next" ${i >= ids.length - 1 ? 'disabled' : ''}>▶</button>` : ''}
+    <button type="button" data-close>Đóng</button>${s.id ? '<button type="button" id="help">🎧 Nhờ hỗ trợ</button><button type="button" id="inv">🧾 Tạo Invoice</button>' : ''}<button class="main" form="f">💾 Lưu</button></footer>`;
 
-  const input = d.querySelector('[name=follow_up]');
+  const f = d.querySelector('#f'), input = f.follow_up;
   if (s.follow_up) { const t = new Date(s.follow_up); input.value = new Date(t - t.getTimezoneOffset()*60000).toISOString().slice(0,16); }
-  const on = (id, fn) => { const f = d.querySelector(id); if (f) f.onsubmit = async e => {
+  const tick = () => { const st = ST[f.state.value]; d.querySelector('#clk').textContent = `🕒 ${new Date().toLocaleTimeString('en-US', {timeZone: f.timezone.value, hour: '2-digit', minute: '2-digit'})}${st ? ` (${st[0]})` : ''}`; };
+  f.state.onchange = () => { const z = ST[f.state.value]?.[1]; if (z) f.timezone.value = z; tick(); };
+  tick(); clearInterval(d.t); d.t = setInterval(tick, 30000); d.onclose = () => clearInterval(d.t);
+  d.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const x = b.parentNode.querySelector('input'); x.readOnly = false; x.focus(); });
+  d.querySelectorAll('[data-close]').forEach(b => b.onclick = () => d.close());
+  if (i >= 0) { d.querySelector('#prev') && (d.querySelector('#prev').onclick = () => go(-1)); d.querySelector('#next') && (d.querySelector('#next').onclick = () => go(1)); }
+  if (s.id) {
+    d.querySelector('#inv').onclick = () => { const o = d.querySelector('#order'); o.hidden = false; o.scrollIntoView({behavior:'smooth'}); o.amount.focus(); };
+    d.querySelector('#help').onclick = async () => {
+      const n = prompt('Bạn cần hỗ trợ gì?'); if (!n) return;
+      await run(db.from('calls').insert({salon_id: s.id, result: 'Nhờ hỗ trợ', note: n})); d.close(); await load();
+    };
+  }
+  const on = (id, fn) => { const form = d.querySelector(id); if (form) form.onsubmit = async e => {
     e.preventDefault();
     const btn = e.submitter; btn.disabled = true;
-    try { await fn(Object.fromEntries(new FormData(f))); d.close(); await load(); }
+    try { await fn(Object.fromEntries(new FormData(form))); d.close(); await load(); }
     finally { btn.disabled = false; }
   }; };
-  on('#f', v => {
-    for (const f of ['potential','lead_source','brand','reason','campaign']) v[f] = v[f]?.trim() || null;
-    const row = {...v, phone: phone(v.phone), state: v.state.toUpperCase(), do_not_call: !!v.do_not_call,
-      follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
-    return run(s.id ? db.from('salons').update(row).eq('id', s.id) : db.from('salons').insert(row));
-  });
-  on('#call', async v => {
-    await run(db.from('calls').insert({...v, salon_id: s.id}));
-    if (s.stage === 'new') await run(db.from('salons').update({stage:'called'}).eq('id', s.id));
+  on('#f', async ({result, note, ...v}) => {
+    for (const k of ['potential','lead_source','brand','reason','campaign','address','city','zip','owner2','cellphone','cellphone2','description']) v[k] = v[k]?.trim() || null;
+    for (const k of ['phone','cellphone','cellphone2']) if (v[k]) v[k] = phone(v[k]);
+    const row = {...v, do_not_call: !!v.do_not_call, follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
+    if (result && row.stage === 'new') row.stage = 'called';
+    await run(s.id ? db.from('salons').update(row).eq('id', s.id) : db.from('salons').insert(row));
+    if (result) await run(db.from('calls').insert({result, note, salon_id: s.id}));
   });
   on('#order', async v => {
     await run(db.from('orders').insert({...v, salon_id: s.id}));
     await run(db.from('salons').update({stage:'ordered'}).eq('id', s.id));
   });
-  d.querySelector('#close').onclick = () => d.close();
-  d.showModal();
+  if (!d.open) d.showModal();
 }
 
 $('#login').onsubmit = async e => {
@@ -253,7 +296,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.id === 'apps') $('#menu').showModal();
   if (b.dataset.tab) { $('#menu').close(); tab = b.dataset.tab; load(); }
-  if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id));
+  if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id), [...new Set([...(b.closest('table')?.querySelectorAll('[data-id]') || [])].map(x => x.dataset.id))]);
 });
 start();
 </script>
