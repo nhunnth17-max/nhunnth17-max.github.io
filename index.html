@@ -68,7 +68,7 @@ nav{background:#1b1550;border-top-color:#2f2860}nav button{color:#9a94c4;backgro
 .bd{display:inline-block;border:1px solid;border-radius:99px;padding:5px 14px;font-weight:600;font-size:14px}
 .bd.gold{color:#f5c451;border-color:#8a6d2f;background:#33281a}.bd.green{color:#34d399;border-color:#1f6b57;background:#103a33}.bd.red{color:#ff6b6b;border-color:#8a3535;background:#3a1a22}
 .teal{color:#2dd4bf}.gold{color:#f5c451;font-weight:600}.ph{line-height:1.5}.ava{background:linear-gradient(135deg,#f08a6c,#e66f9a)}
-</style>
+.bd.blue{color:#8ea2ff;border-color:#3d4a9a;background:#1c2354}</style>
 </head>
 <body>
 <main>
@@ -93,11 +93,12 @@ const KEY = 'sb_publishable_-9x9NZr-yBlZrhn0NufGPg_ErFrsryI';   // chỉ dùng a
 const db = supabase.createClient(URL_, KEY);
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const STAGE = {new:'Mới',called:'Đã gọi',interested:'Quan tâm',ordered:'Đặt hàng'};
+const STAGE = {new:'New',called:'Follow',ordered:'Completed'};
+const LEADS = ['Closedeal','Lost','Invalid Lead','No Response','Busy'], LEAD = {Closedeal:'green', Lost:'red', 'Invalid Lead':'red', 'No Response':'gold', Busy:'blue'};
 const ZONES = ['America/New_York','America/Chicago','America/Denver','America/Phoenix','America/Los_Angeles','America/Anchorage','Pacific/Honolulu'];
 const PRODUCTS = ['Pedicure Spa & Package','Furniture','Padset','Headspa Bed','Nail Supply','Acc & Part'];
 const POT = PRODUCTS;
-const FIELDS = [['stage','Status'],['potential','Potential'],['lead_source','Lead'],['reason','Reason']];
+const FIELDS = [['stage','Status'],['potential','Potential'],['lead_status','Lead'],['lead_source','Nguồn'],['reason','Reason']];
 const REASONS = [
   'R1 - Khách chưa có nhu cầu',
   'R2 - Khách bận',
@@ -147,6 +148,7 @@ async function all(table, key = 'id') {   // Supabase trả tối đa 1000 dòng
 }
 async function load() {
   [S, C, O, M] = await Promise.all([all('salons'), all('calls'), all('orders'), all('members','user_id')]);
+  S.forEach(s => { if (s.stage === 'interested') s.stage = 'called'; });
   me = M.find(m => m.user_id === me.user_id);
   render();
 }
@@ -165,12 +167,12 @@ function table(rows) {
   const head = ['Mã KH','Business name','Customer','Phone','State','Potential','Status','Lead status','Deadline','Ngày thêm','Sale'];
   return `<div class="scroll"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(s => {
     const f = s.follow_up && (new Date(s.follow_up) - Date.now()) / 864e5, a = days(s.created_at);
-    const st = s.do_not_call ? badge('Không gọi','red') : s.stage === 'ordered' ? badge('Completed','green') : badge('Follow','gold');
+    const st = s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
     return `<tr><td class="code">${esc(s.code)}</td><td><button data-id="${s.id}">${esc(s.name)}</button></td>
     <td><span class="ava">${initials(s.assigned_to)}</span>${esc(s.owner)}</td>
     <td class="code ph">${esc(s.cellphone || s.phone)}${s.cellphone && s.cellphone !== s.phone ? `<br>${esc(s.phone)}` : ''}</td>
     <td>${esc(ST[(s.state || '').toUpperCase()]?.[0] || s.state)}</td><td class="teal">${esc(s.potential)}</td><td>${st}</td>
-    <td>${s.reason ? `<span title="${esc(s.reason)}">${badge('Lost','red')}</span>` : '—'}</td>
+    <td>${s.lead_status ? `<span title="${esc(s.reason)}">${badge(s.lead_status, LEAD[s.lead_status] || 'gold')}</span>` : '—'}</td>
     <td>${s.follow_up && !s.do_not_call ? (f < 0 ? badge(`Hết hạn ${Math.ceil(-f)}d`,'red') : badge(`Còn ${Math.floor(f)}d`,'gold')) : '—'}</td>
     <td class="gold">${a}d${a >= 7 && s.stage !== 'ordered' ? ' ⚠️' : ''}</td>
     <td>${esc(M.find(m => m.user_id === s.assigned_to)?.name)}<br><small class="code">${esc(s.campaign)}</small></td></tr>`;
@@ -179,7 +181,7 @@ function table(rows) {
 function list() {
   const k = q.toLowerCase();
   const rows = S.filter(s => [s.code,s.name,s.owner,s.owner2,s.phone,s.cellphone,s.state].join(' ').toLowerCase().includes(k)
-    && FIELDS.every(([f]) => !filter[f] || s[f] === filter[f])
+    && FIELDS.every(([f]) => !filter[f] || (filter[f] === '_none' ? !s[f] : s[f] === filter[f]))
     && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
   $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
 }
@@ -191,16 +193,17 @@ function render() {
     const sel = (f, label, list) => `<select data-f="${f}">${opts([['',`Tất cả ${label}`], ...list], filter[f] || '')}</select>`;
     v.innerHTML = `<div class="head"><h2>Khách hàng</h2><button class="main" id="add">+ Thêm khách</button></div>
       <input id="q" placeholder="Tìm tên, SĐT, mã KH, công ty..." value="${esc(q)}">
-      <div class="cards">${card('Tổng data', S.length, 'data-stage=""', !filter.stage && !filter.potential, 'được giao')}${card('Closedeal', S.filter(s => s.stage === 'ordered').length, 'data-stage="ordered"', filter.stage === 'ordered', 'đã chốt')}
+      <div class="cards">${card('Tổng data', S.length, 'data-stage=""', !filter.stage && !filter.potential && !filter.lead_status, 'được giao')}${card('Closedeal', S.filter(s => s.lead_status === 'Closedeal').length, 'data-lead="Closedeal"', filter.lead_status === 'Closedeal', 'đã chốt')}
         ${[...new Set([...PRODUCTS, ...values('potential')])].map(b => card(b, S.filter(s => s.potential === b).length, `data-brand="${esc(b)}"`, filter.potential === b)).join('')}</div>
-      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
+      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'lead_status' ? [['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])] : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
         ${sel('late', 'hạn gọi', [['1','Chỉ quá hạn']])}${sel('month', 'tháng', [...new Set(S.map(monthOf))].sort().map(x => [x,x]))}</div>
       <div id="list"></div>`;
     list();
     $('#q').oninput = e => { q = e.target.value; list(); };
     $('#add').onclick = () => edit();
     v.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { filter[x.dataset.f] = x.value; render(); });
-    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; if (!x.dataset.stage) filter.potential = ''; render(); });
+    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; if (!x.dataset.stage) filter.potential = filter.lead_status = ''; render(); });
+    v.querySelectorAll('[data-lead]').forEach(x => x.onclick = () => { filter.lead_status = filter.lead_status === x.dataset.lead ? '' : x.dataset.lead; render(); });
     v.querySelectorAll('[data-brand]').forEach(x => x.onclick = () => { filter.potential = filter.potential === x.dataset.brand ? '' : x.dataset.brand; render(); });
   } else if (tab === 'campaign') {
     v.innerHTML = values('campaign').map(c => { const r = S.filter(s => s.campaign === c); return `<h3>${esc(c)} (${r.length})</h3>${table(r)}`; }).join('')
@@ -262,7 +265,8 @@ function edit(s = {}, ids = []) {
     ${fl('Description', `<textarea name="description" rows="5">${esc(s.description)}</textarea>`, 'full')}
     ${s.id && !s.do_not_call ? sel('result','Kết quả cuộc gọi',[['','-- Chọn --'], ...CALLS.map(x => [x,x])],'','full') + fl('Ghi chú', '<textarea name="note" rows="3" placeholder="Nội dung cuộc gọi..."></textarea>', 'full') : ''}
     ${sel('stage','Status',Object.entries(STAGE), s.stage || 'new')}${sel('potential','Potential',[['','—'], ...POT.map(x => [x,x])], s.potential || '')}
-    ${inp('lead_source','Lead (nguồn)')}${inp('campaign','Campaign')}
+    ${sel('lead_status','Lead status',[['','Chưa có Lead Status'], ...LEADS.map(x => [x,x])], s.lead_status || '')}${inp('lead_source','Lead (nguồn)')}
+    ${inp('campaign','Campaign')}
     ${sel('reason','Reason (lý do)',[['','—'], ...REASONS.map(x => [x,x])], s.reason || '')}
     ${sel('assigned_to','Giao cho',M.map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
     <label class="full" style="margin-top:14px"><input type="checkbox" name="do_not_call" ${s.do_not_call ? 'checked' : ''}> Không gọi</label>
@@ -296,7 +300,7 @@ function edit(s = {}, ids = []) {
     finally { btn.disabled = false; }
   }; };
   on('#f', async ({result, note, ...v}) => {
-    for (const k of ['potential','lead_source','reason','campaign','address','city','zip','owner2','cellphone','cellphone2','description']) v[k] = v[k]?.trim() || null;
+    for (const k of ['potential','lead_status','lead_source','reason','campaign','address','city','zip','owner2','cellphone','cellphone2','description']) v[k] = v[k]?.trim() || null;
     for (const k of ['phone','cellphone','cellphone2']) if (v[k]) v[k] = phone(v[k]);
     const row = {...v, do_not_call: !!v.do_not_call, follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
     if (result && row.stage === 'new') row.stage = 'called';
@@ -305,7 +309,7 @@ function edit(s = {}, ids = []) {
   });
   on('#order', async v => {
     await run(db.from('orders').insert({...v, salon_id: s.id}));
-    await run(db.from('salons').update({stage:'ordered'}).eq('id', s.id));
+    await run(db.from('salons').update({stage:'ordered', lead_status:'Closedeal'}).eq('id', s.id));
   });
   if (!d.open) d.showModal();
 }
