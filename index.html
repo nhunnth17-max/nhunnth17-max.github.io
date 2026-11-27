@@ -269,6 +269,71 @@ function campaignView(v) {
   draw();
 }
 
+// ---- Sao lưu và nhập file (chỉ admin) ----
+const isAdmin = () => me.role === 'admin';
+const IMPORT = ['name','owner','phone','cellphone','cellphone2','owner2','address','city','state','zip','campaign','potential','lead_source','description','sale'];
+const cell = v => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g,'""') + '"'; };
+function download(file, rows) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(cell).join(',')).join('\r\n')], {type:'text/csv'}));
+  a.download = file; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function dump(name, rows) {
+  if (!rows.length) return alert('Chưa có dữ liệu.');
+  const keys = Object.keys(rows[0]);
+  const extra = x => [M.find(m => m.user_id === (x.assigned_to || x.user_id))?.name];
+  download(`${name}-${new Date().toISOString().slice(0,10)}.csv`, [[...keys,'sale'], ...rows.map(x => [...keys.map(k => x[k]), ...extra(x)])]);
+}
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0], sep = [',',';','\t'].sort((a,b) => first.split(b).length - first.split(a).length)[0];
+  const rows = []; let row = [], v = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) { if (c !== '"') v += c; else if (text[i+1] === '"') { v += '"'; i++; } else quoted = false; }
+    else if (c === '"' && !v) quoted = true;
+    else if (c === sep) { row.push(v); v = ''; }
+    else if (c === '\n') { row.push(v); rows.push(row); row = []; v = ''; }
+    else if (c !== '\r') v += c;
+  }
+  if (v || row.length) { row.push(v); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim()));
+}
+async function importFile(file) {
+  const [head, ...rows] = parseCSV(await file.text());
+  const keys = (head || []).map(h => h.trim().toLowerCase());
+  if (!keys.includes('name') || !keys.includes('phone')) return alert('File phải là CSV, dòng đầu có cột name và phone.');
+  if (!confirm(`Nhập ${rows.length} dòng vào CRM?`)) return;
+  const out = $('#result'), bad = []; let ok = 0;
+  for (const [i, r] of rows.entries()) {
+    const x = Object.fromEntries(IMPORT.map(k => [k, (r[keys.indexOf(k)] || '').trim().replace(/^'(?=[=+\-@])/, '') || null]));
+    const sale = x.sale; delete x.sale;
+    const who = sale ? M.find(m => m.name.toLowerCase() === sale.toLowerCase()) : me;
+    for (const k of ['phone','cellphone','cellphone2']) if (x[k]) x[k] = phone(x[k]) || null;
+    const st = Object.keys(ST).find(c => [c, ST[c][0].toUpperCase()].includes((x.state || '').toUpperCase()));
+    if (st) { x.state = st; x.timezone = ST[st][1]; }
+    let why = !x.name ? 'Thiếu tên tiệm' : !x.phone ? 'Thiếu số điện thoại' : !who ? 'Không có nhân viên tên ' + sale : '';
+    if (!why) { const {error} = await db.from('salons').insert({...x, assigned_to: who.user_id}); if (error) why = error.message; }
+    if (why) bad.push([i + 2, why, ...r]); else ok++;
+    out.textContent = `Đang nhập ${i + 1}/${rows.length}...`;
+  }
+  out.textContent = `Đã nhập ${ok} khách, bỏ qua ${bad.length} dòng.`;
+  if (bad.length) download('dong-loi.csv', [['dòng','lý do',...head], ...bad]);
+  S = await all('salons');
+}
+function systemView(v) {
+  v.innerHTML = `<h2>System</h2><div class="scroll"><table><tr><th>Thành viên</th><th>Quyền</th></tr>${M.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.role)}</td></tr>`).join('')}</table></div>
+    ${isAdmin() ? `<div class="card" style="margin-top:12px"><h3>Sao lưu (tải file CSV)</h3><div class="row"><button id="x1">Khách hàng</button><button id="x2">Cuộc gọi</button><button id="x3">Đơn hàng</button></div>
+    <h3>Nhập khách từ Excel</h3><p>Trong Excel chọn Save As → <b>CSV UTF-8</b>. Số trùng sẽ bị bỏ qua. Cột sale ghi đúng tên nhân viên, để trống thì giao cho bạn.</p>
+    <div class="row"><button id="tpl">Tải file mẫu</button><input id="file" type="file" accept=".csv"></div><p id="result"></p></div>` : ''}`;
+  if (!isAdmin()) return;
+  $('#x1').onclick = () => dump('khach-hang', S);
+  $('#x2').onclick = () => dump('cuoc-goi', C);
+  $('#x3').onclick = () => dump('don-hang', O);
+  $('#tpl').onclick = () => download('mau-nhap-khach.csv', [IMPORT]);
+  $('#file').onchange = async e => { const f = e.target.files[0]; if (!f) return; e.target.disabled = true; try { await importFile(f); } finally { e.target.disabled = false; e.target.value = ''; } };
+}
+
 function render() {
   const v = $('#view'), active = S.filter(s => !s.do_not_call);
   document.querySelectorAll('nav [data-tab]').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
@@ -307,12 +372,12 @@ function render() {
   } else if (tab === 'help') {
     v.innerHTML = `<h2>Hướng dẫn</h2><div class="card"><p>Thêm khách: vào Khách hàng, bấm "+ Thêm khách".</p><p>Sửa khách, ghi cuộc gọi, thêm đơn: bấm vào tên tiệm.</p><p>Lịch gọi lại: điền ô "Gọi lại", xem ở Cảnh báo.</p><p>Khách yêu cầu ngừng liên hệ: tick "Không gọi".</p></div>`;
   } else if (tab === 'system') {
-    v.innerHTML = `<h2>System</h2><div class="scroll"><table><tr><th>Thành viên</th><th>Quyền</th></tr>${M.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.role)}</td></tr>`).join('')}</table></div>`;
+    systemView(v);
   } else if (tab === 'dnc') {
     v.innerHTML = table(S.filter(s => s.do_not_call));
   } else {
     const month = new Date().toISOString().slice(0,7);
-    v.innerHTML = `<h3>Tháng ${month} (theo giờ UTC)</h3><div class="scroll"><table><tr><th>Nhân viên</th><th>Cuộc gọi</th><th>Đơn</th><th>Doanh số</th></tr>${M.map(m => {
+    v.innerHTML = `<h3>Tháng ${month} (theo giờ UTC)</h3><div class="scroll"><table><tr><th>Nhân viên</th><th>Cuộc gọi</th><th>Đơn</th><th>Doanh số</th></tr>${M.filter(m => isAdmin() || m.user_id === me.user_id).map(m => {
       const mine = x => x.user_id === m.user_id && x.created_at.startsWith(month), o = O.filter(mine);
       return `<tr><td>${esc(m.name)}</td><td>${C.filter(mine).length}</td><td>${o.length}</td><td>${money(o.reduce((a,x) => a + Number(x.amount), 0))}</td></tr>`;
     }).join('')}</table></div>`;
@@ -351,7 +416,7 @@ function edit(s = {}, ids = []) {
     ${sel('lead_status','Lead status',[['','Chưa có Lead Status'], ...LEADS.map(x => [x,x])], s.lead_status || '')}${inp('lead_source','Lead (nguồn)')}
     ${inp('campaign','Campaign')}
     ${sel('reason','Reason (lý do)',[['','—'], ...REASONS.map(x => [x,x])], s.reason || '')}
-    ${sel('assigned_to','Giao cho',M.map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
+    ${sel('assigned_to','Giao cho',M.filter(m => isAdmin() || m.user_id === me.user_id).map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
     <label class="full" style="margin-top:14px"><input type="checkbox" name="do_not_call" ${s.do_not_call ? 'checked' : ''}> Không gọi</label>
     <input type="hidden" name="timezone" value="${esc(zone)}">
     <datalist id="products">${PRODUCTS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
@@ -387,7 +452,10 @@ function edit(s = {}, ids = []) {
     for (const k of ['phone','cellphone','cellphone2']) if (v[k]) v[k] = phone(v[k]);
     const row = {...v, do_not_call: !!v.do_not_call, follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
     if (result && row.stage === 'new') row.stage = 'called';
-    await run(s.id ? db.from('salons').update(row).eq('id', s.id) : db.from('salons').insert(row));
+    if (s.id) {
+      const saved = await run(db.from('salons').update(row).eq('id', s.id).select('id'));
+      if (!saved?.length) { alert('Chưa lưu được: khách này không còn được giao cho bạn.'); return; }
+    } else await run(db.from('salons').insert(row));
     if (result) await run(db.from('calls').insert({result, note, salon_id: s.id}));
   });
   on('#order', async v => {
