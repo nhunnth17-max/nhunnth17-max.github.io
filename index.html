@@ -182,8 +182,8 @@ async function start() {
 
 const days = d => Math.floor((Date.now() - new Date(d)) / 864e5);
 const badge = (t, c) => `<span class="bd ${c}">${esc(t)}</span>`;
-function table(rows) {
-  const head = ['Mã KH','Business name','Customer','Phone','State','Potential','Status','Lead status','Deadline','Ngày thêm','Sale'];
+function table(rows, contact) {
+  const head = ['Mã KH','Business name','Customer','Phone','State','Potential','Status','Lead status','Deadline','Ngày thêm','Sale', ...(contact ? ['Last contact'] : [])];
   return `<div class="scroll"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(s => {
     const f = s.follow_up && (new Date(s.follow_up) - Date.now()) / 864e5, a = days(s.created_at);
     const st = s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
@@ -194,8 +194,8 @@ function table(rows) {
     <td>${s.lead_status ? `<span title="${esc(s.reason)}">${badge(s.lead_status, LEAD[s.lead_status] || 'gold')}</span>` : '—'}</td>
     <td>${s.follow_up && !s.do_not_call ? (f < 0 ? badge(`Hết hạn ${Math.ceil(-f)}d`,'red') : badge(`Còn ${Math.floor(f)}d`,'gold')) : '—'}</td>
     <td class="gold">${a}d${a >= 7 && s.stage !== 'ordered' ? ' ⚠️' : ''}</td>
-    <td>${esc(M.find(m => m.user_id === s.assigned_to)?.name)}<br><small class="code">${esc(s.campaign)}</small></td></tr>`;
-  }).join('') || '<tr><td colspan="11">Chưa có dữ liệu</td></tr>'}</table></div>`;
+    <td>${esc(M.find(m => m.user_id === s.assigned_to)?.name)}<br><small class="code">${esc(s.campaign)}</small></td>${contact ? `<td>${callsOf(s.id)[0] ? time(callsOf(s.id)[0].created_at) : 'Chưa gọi'}</td>` : ''}</tr>`;
+  }).join('') || `<tr><td colspan="${head.length}">Chưa có dữ liệu</td></tr>`}</table></div>`;
 }
 function list() {
   const k = q.toLowerCase();
@@ -204,7 +204,7 @@ function list() {
     && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
   $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
 }
-const cf = {k:'active', status:'', lead:'', pot:'', q:'', view:'list', camp:''};
+const cf = {k:'active', status:'', lead:'', pot:'', q:'', view:'list', camp:'', reason:'', st:'', due:'', sort:''};
 let csel = '';
 const callsOf = id => C.filter(c => c.salon_id === id).sort((a,b) => b.created_at.localeCompare(a.created_at));
 const stBadge = s => s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
@@ -223,22 +223,29 @@ function campaignView(v) {
   const list = () => {
     const q = cf.q.toLowerCase();
     return rows.filter(K[cf.k][2]).filter(s => (!cf.status || s.stage === cf.status) && (!cf.pot || s.potential === cf.pot)
+      && (cf.view !== 'table' || ((!cf.reason || s.reason === cf.reason) && (!cf.st || (s.state || '').toUpperCase() === cf.st)
+        && (!cf.due || (s.follow_up && (new Date(s.follow_up) < now ? 'late' : 'next') === cf.due))))
       && (!cf.lead || (cf.lead === '_none' ? !s.lead_status : s.lead_status === cf.lead))
-      && [s.name, s.owner, s.phone, s.cellphone].join(' ').toLowerCase().includes(q))
-      .sort((a,b) => (due(b) - due(a)) || (!!b.potential - !!a.potential) || lc(a).localeCompare(lc(b)));
+      && [s.code, s.name, s.owner, s.phone, s.cellphone].join(' ').toLowerCase().includes(q))
+      .sort((a,b) => (cf.view === 'table' && cf.sort) ? (cf.sort === 'new' ? lc(b).localeCompare(lc(a)) : lc(a).localeCompare(lc(b))) : (due(b) - due(a)) || (!!b.potential - !!a.potential) || lc(a).localeCompare(lc(b)));
   };
   const fsel = (n, label, l) => `<select data-cf="${n}">${opts([['', label], ...l], cf[n])}</select>`;
   v.innerHTML = `<div class="head"><h2>${esc(cf.camp || 'Tất cả khách')}</h2><div class="row" style="margin:0">
       <select id="cc">${opts([['','Tất cả khách'], ...camps.map(c => [esc(c), esc(c)])], esc(cf.camp))}</select>
       <button class="tg ${cf.view === 'list' ? 'on' : ''}" data-v="list">☰ Danh sách</button><button class="tg ${cf.view === 'table' ? 'on' : ''}" data-v="table">▦ Bảng</button></div></div>
     <div class="kpis">${Object.entries(K).map(([k,[t,c,f,sub]]) => `<button class="kpi ${c} ${cf.k === k ? 'on' : ''}" data-k="${k}"><small>${t}</small><b>${rows.filter(f).length}</b><em>${sub}</em></button>`).join('')}</div>
-    <div class="row">${fsel('status','Status',Object.entries(STAGE))}${fsel('lead','Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Potential',POT.map(x => [x,x]))}
-      <input id="cq" placeholder="Tìm tiệm, tên chủ, số điện thoại" value="${esc(cf.q)}" style="flex:1;min-width:200px"></div><div id="cb"></div>`;
+    <div class="row">${fsel('status','Tất cả Status',Object.entries(STAGE))}${cf.view === 'table' ? fsel('reason','Tất cả Reason',REASONS.map(x => [x,x])) : ''}${fsel('lead','Tất cả Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Tất cả Potential',POT.map(x => [x,x]))}
+      ${cf.view === 'table' ? fsel('st','Tất cả State',[...new Set(S.map(s => (s.state || '').toUpperCase()).filter(Boolean))].sort().map(x => [esc(x), esc(ST[x]?.[0] || x)])) + fsel('due','Tất cả hạn gọi',[['late','Quá hạn'],['next','Sắp tới']]) + fsel('sort','Last Contact',[['new','Gọi gần nhất trước'],['old','Lâu chưa gọi trước']]) : ''}
+      <input id="cq" placeholder="Tìm tên, mã KH, số điện thoại..." value="${esc(cf.q)}" style="flex:1;min-width:200px"></div><div id="cb"></div>`;
   const draw = () => {
     const L = list();
     if (!L.some(s => String(s.id) === csel)) csel = String(L[0]?.id ?? '');
     const s = L.find(x => String(x.id) === csel), cn = s ? callsOf(s.id) : [], k = cn.length;
-    const left = cf.view === 'table' ? table(L) : `<div class="card" style="padding:0"><div style="padding:12px"><b>Danh sách cần gọi · ${L.length} khách</b><br><small class="code">Ưu tiên: hẹn gọi lại đến hạn, Potential, lâu chưa gọi</small></div>${L.map(x => `<div class="li ${String(x.id) === csel ? 'on' : ''}" data-sel="${x.id}"><span class="ava">${esc(x.name.slice(0,2).toUpperCase())}</span><div><b>${esc(x.name)}</b><br><small class="code">${esc(x.owner)} · ${esc(ST[(x.state || '').toUpperCase()]?.[0] || x.state)}</small></div>${x.potential ? badge('Potential','blue') : ''}</div>`).join('') || '<p style="padding:12px">Không có khách.</p>'}</div>`;
+    if (cf.view === 'table') {
+      $('#cb').innerHTML = `<h3>${L.length} khách</h3>${table(L, true)}`;
+      return;
+    }
+    const left = `<div class="card" style="padding:0"><div style="padding:12px"><b>Danh sách cần gọi · ${L.length} khách</b><br><small class="code">Ưu tiên: hẹn gọi lại đến hạn, Potential, lâu chưa gọi</small></div>${L.map(x => `<div class="li ${String(x.id) === csel ? 'on' : ''}" data-sel="${x.id}"><span class="ava">${esc(x.name.slice(0,2).toUpperCase())}</span><div><b>${esc(x.name)}</b><br><small class="code">${esc(x.owner)} · ${esc(ST[(x.state || '').toUpperCase()]?.[0] || x.state)}</small></div>${x.potential ? badge('Potential','blue') : ''}</div>`).join('') || '<p style="padding:12px">Không có khách.</p>'}</div>`;
     const ph = (label, n, big) => n ? `<div class="pn"><div><small>${label}</small><div class="num ${big ? 'big' : ''}">${esc(n)}</div></div>${s.do_not_call ? '' : `<a class="ic ${big ? 'lg' : ''}" href="tel:+1${esc(n)}">📞</a>`}</div>` : '';
     const ago = cn[0] ? (d => d ? d + ' ngày trước' : 'Hôm nay')(days(cn[0].created_at)) : 'Chưa gọi';
     const kv = s && [['Status', stBadge(s)], ['Potential', s.potential ? badge(s.potential,'blue') : '—'], ['Lead', s.lead_status ? badge(s.lead_status, LEAD[s.lead_status] || 'gold') : '—'], ['Ngày hẹn', s.follow_up ? time(s.follow_up, s.timezone) : '—'], ['Liên hệ gần nhất', ago]];
