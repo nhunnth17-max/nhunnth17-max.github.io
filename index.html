@@ -210,9 +210,8 @@ const callsOf = id => C.filter(c => c.salon_id === id).sort((a,b) => b.created_a
 const stBadge = s => s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
 function campaignView(v) {
   const camps = values('campaign');
-  if (!camps.length) { v.innerHTML = '<h2>Campaign</h2><div class="card">Chưa có campaign. Mở một khách và điền ô Campaign.</div>'; return; }
-  if (!camps.includes(cf.camp)) cf.camp = camps[0];
-  const rows = S.filter(s => s.campaign === cf.camp), now = Date.now(), today = new Date().toDateString();
+  if (cf.camp && !camps.includes(cf.camp)) cf.camp = '';
+  const rows = cf.camp ? S.filter(s => s.campaign === cf.camp) : S, now = Date.now(), today = new Date().toDateString();
   const K = {
     calls: ['Calls','blue', s => C.some(c => c.salon_id === s.id && c.user_id === me.user_id && new Date(c.created_at).toDateString() === today), 'khách đã gọi hôm nay'],
     active: ['Active','green', s => !s.do_not_call && !['Closedeal','Lost','Invalid Lead'].includes(s.lead_status), 'excl. closed / lost / invalid'],
@@ -229,8 +228,8 @@ function campaignView(v) {
       .sort((a,b) => (due(b) - due(a)) || (!!b.potential - !!a.potential) || lc(a).localeCompare(lc(b)));
   };
   const fsel = (n, label, l) => `<select data-cf="${n}">${opts([['', label], ...l], cf[n])}</select>`;
-  v.innerHTML = `<div class="head"><h2>${esc(cf.camp)}</h2><div class="row" style="margin:0">
-      <select id="cc">${opts(camps.map(c => [c, esc(c)]), cf.camp)}</select>
+  v.innerHTML = `<div class="head"><h2>${esc(cf.camp || 'Tất cả khách')}</h2><div class="row" style="margin:0">
+      <select id="cc">${opts([['','Tất cả khách'], ...camps.map(c => [c, esc(c)])], cf.camp)}</select>
       <button class="tg ${cf.view === 'list' ? 'on' : ''}" data-v="list">☰ Danh sách</button><button class="tg ${cf.view === 'table' ? 'on' : ''}" data-v="table">▦ Bảng</button></div></div>
     <div class="kpis">${Object.entries(K).map(([k,[t,c,f,sub]]) => `<button class="kpi ${c} ${cf.k === k ? 'on' : ''}" data-k="${k}"><small>${t}</small><b>${rows.filter(f).length}</b><em>${sub}</em></button>`).join('')}</div>
     <div class="row">${fsel('status','Status',Object.entries(STAGE))}${fsel('lead','Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Potential',POT.map(x => [x,x]))}
