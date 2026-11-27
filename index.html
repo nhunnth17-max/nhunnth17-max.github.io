@@ -65,6 +65,21 @@ nav button{flex:none;display:flex;align-items:center;gap:10px;text-align:left;fo
 nav i{width:22px;font-size:15px;text-align:center}nav button.on{border-left-color:var(--b)}
 #apps{display:none}#switch{margin-top:auto}
 }
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.kpi{text-align:left;background:#fff;border:1px solid var(--ln);border-top:3px solid var(--c);border-radius:12px;padding:10px 12px}
+.kpi small{display:block;text-transform:uppercase;font-size:11px;color:var(--mu)}.kpi b{display:block;font-size:22px;color:var(--c)}.kpi em{font-style:normal;font-size:11px;color:var(--mu)}
+.kpi.on{background:var(--bl);border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
+.kpi.blue{--c:#0068ff}.kpi.green{--c:#0a9d58}.kpi.orange{--c:#f59e0b}.kpi.purple{--c:#7c5cff}.kpi.red{--c:#e5484d}
+.tg.on{background:var(--bl);color:var(--b);border-color:var(--b)}
+.cm{display:grid;gap:12px}
+@media (min-width:1000px){.cm{grid-template-columns:minmax(0,1fr) 380px;align-items:start}.cr{position:sticky;top:12px}}
+.li{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid #e8ebef;cursor:pointer}.li>div{flex:1}
+.li.on{background:var(--bl);box-shadow:inset 3px 0 var(--b)}.li .ava{width:36px;line-height:36px;font-size:12px;margin:0}
+.pn{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.num{font:600 15px ui-monospace,monospace}.num.big{font-size:22px}
+a.ic.lg{width:44px;height:44px;background:var(--b);color:#fff}
+.seg{display:flex;gap:4px;margin:8px 0 4px}.seg i{flex:1;height:5px;border-radius:3px;background:#e1e6ee}.seg i.f{background:#0a9d58}.seg i.c{background:var(--b)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.kv small,.pn small{color:var(--mu)}.nt{padding:8px 0;border-top:1px solid #e8ebef}
 </style>
 </head>
 <body>
@@ -182,6 +197,65 @@ function list() {
     && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
   $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
 }
+const cf = {k:'active', status:'', lead:'', pot:'', q:'', view:'list', camp:''};
+let csel = '';
+const callsOf = id => C.filter(c => c.salon_id === id).sort((a,b) => b.created_at.localeCompare(a.created_at));
+const stBadge = s => s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
+function campaignView(v) {
+  const camps = values('campaign');
+  if (!camps.length) { v.innerHTML = '<h2>Campaign</h2><div class="card">Chưa có campaign. Mở một khách và điền ô Campaign.</div>'; return; }
+  if (!camps.includes(cf.camp)) cf.camp = camps[0];
+  const rows = S.filter(s => s.campaign === cf.camp), now = Date.now(), today = new Date().toDateString();
+  const K = {
+    calls: ['Calls','blue', s => C.some(c => c.salon_id === s.id && c.user_id === me.user_id && new Date(c.created_at).toDateString() === today), 'khách đã gọi hôm nay'],
+    active: ['Active','green', s => !s.do_not_call && !['Closedeal','Lost','Invalid Lead'].includes(s.lead_status), 'excl. closed / lost / invalid'],
+    callbacks: ['Callbacks','orange', s => !s.do_not_call && s.follow_up && new Date(s.follow_up) >= now, 'upcoming'],
+    potential: ['Potential','purple', s => s.potential, 'on hand'],
+    uncalled: ['Uncalled','red', s => !s.do_not_call && !callsOf(s.id).length, 'never contacted']
+  };
+  const due = s => s.follow_up && new Date(s.follow_up) <= now ? 1 : 0, lc = s => callsOf(s.id)[0]?.created_at || '';
+  const list = () => {
+    const q = cf.q.toLowerCase();
+    return rows.filter(K[cf.k][2]).filter(s => (!cf.status || s.stage === cf.status) && (!cf.pot || s.potential === cf.pot)
+      && (!cf.lead || (cf.lead === '_none' ? !s.lead_status : s.lead_status === cf.lead))
+      && [s.name, s.owner, s.phone, s.cellphone].join(' ').toLowerCase().includes(q))
+      .sort((a,b) => (due(b) - due(a)) || (!!b.potential - !!a.potential) || lc(a).localeCompare(lc(b)));
+  };
+  const fsel = (n, label, l) => `<select data-cf="${n}">${opts([['', label], ...l], cf[n])}</select>`;
+  v.innerHTML = `<div class="head"><h2>${esc(cf.camp)}</h2><div class="row" style="margin:0">
+      <select id="cc">${opts(camps.map(c => [c, esc(c)]), cf.camp)}</select>
+      <button class="tg ${cf.view === 'list' ? 'on' : ''}" data-v="list">☰ Danh sách</button><button class="tg ${cf.view === 'table' ? 'on' : ''}" data-v="table">▦ Bảng</button></div></div>
+    <div class="kpis">${Object.entries(K).map(([k,[t,c,f,sub]]) => `<button class="kpi ${c} ${cf.k === k ? 'on' : ''}" data-k="${k}"><small>${t}</small><b>${rows.filter(f).length}</b><em>${sub}</em></button>`).join('')}</div>
+    <div class="row">${fsel('status','Status',Object.entries(STAGE))}${fsel('lead','Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Potential',POT.map(x => [x,x]))}
+      <input id="cq" placeholder="Tìm tiệm, tên chủ, số điện thoại" value="${esc(cf.q)}" style="flex:1;min-width:200px"></div><div id="cb"></div>`;
+  const draw = () => {
+    const L = list();
+    if (!L.some(s => String(s.id) === csel)) csel = String(L[0]?.id ?? '');
+    const s = L.find(x => String(x.id) === csel), cn = s ? callsOf(s.id) : [], k = cn.length;
+    const left = cf.view === 'table' ? table(L) : `<div class="card" style="padding:0"><div style="padding:12px"><b>Danh sách cần gọi · ${L.length} khách</b><br><small class="code">Ưu tiên: hẹn gọi lại đến hạn, Potential, lâu chưa gọi</small></div>${L.map(x => `<div class="li ${String(x.id) === csel ? 'on' : ''}" data-sel="${x.id}"><span class="ava">${esc(x.name.slice(0,2).toUpperCase())}</span><div><b>${esc(x.name)}</b><br><small class="code">${esc(x.owner)} · ${esc(ST[(x.state || '').toUpperCase()]?.[0] || x.state)}</small></div>${x.potential ? badge('Potential','blue') : ''}</div>`).join('') || '<p style="padding:12px">Không có khách.</p>'}</div>`;
+    const ph = (label, n, big) => n ? `<div class="pn"><div><small>${label}</small><div class="num ${big ? 'big' : ''}">${esc(n)}</div></div>${s.do_not_call ? '' : `<a class="ic ${big ? 'lg' : ''}" href="tel:+1${esc(n)}">📞</a>`}</div>` : '';
+    const ago = cn[0] ? (d => d ? d + ' ngày trước' : 'Hôm nay')(days(cn[0].created_at)) : 'Chưa gọi';
+    const kv = s && [['Status', stBadge(s)], ['Potential', s.potential ? badge(s.potential,'blue') : '—'], ['Lead', s.lead_status ? badge(s.lead_status, LEAD[s.lead_status] || 'gold') : '—'], ['Ngày hẹn', s.follow_up ? time(s.follow_up, s.timezone) : '—'], ['Liên hệ gần nhất', ago]];
+    const right = s ? `<div class="card"><div class="head">${s.potential ? badge(s.potential,'blue') : '<span></span>'}<span class="code">${esc(s.code)}</span></div>
+      <div style="font-size:18px;font-weight:700;margin-top:8px">${esc(s.name)}</div><small class="code">${esc(s.owner)} · ${esc(ST[(s.state || '').toUpperCase()]?.[0] || s.state)}</small>
+      ${ph(s.cellphone ? 'Cellphone' : 'Business phone', s.cellphone || s.phone, 1)}
+      <div class="seg">${Array.from({length: Math.max(6, k + 1)}, (_, i) => `<i class="${i < k ? 'f' : i === k ? 'c' : ''}"></i>`).join('')}</div><small class="code">Đã gọi ${k} lần · kế tiếp: lần ${k + 1}</small>
+      ${s.cellphone && s.cellphone !== s.phone ? ph('Business phone', s.phone) : ''}
+      <div class="kv">${kv.map(([a,b]) => `<div><small>${a}</small><div>${b}</div></div>`).join('')}</div>
+      <button class="main" id="cpn" style="width:100%">✎ Ghi chú & cập nhật kết quả</button></div>
+      <div class="card"><b>Ghi chú gần đây</b>${cn.slice(0,5).map(c => `<div class="nt">${badge(c.result,'blue')} ${esc(c.note)}<br><small class="code">${time(c.created_at)} · ${esc(M.find(m => m.user_id === c.user_id)?.name)}</small></div>`).join('') || '<p class="code">Chưa có ghi chú.</p>'}</div>` : '<div class="card">Không có khách để hiển thị.</div>';
+    $('#cb').innerHTML = `<div class="cm"><div>${left}</div><div class="cr">${right}</div></div>`;
+    document.querySelectorAll('[data-sel]').forEach(x => x.onclick = () => { csel = x.dataset.sel; draw(); });
+    if (s) $('#cpn').onclick = () => edit(s, L.map(x => String(x.id)));
+  };
+  v.querySelectorAll('[data-k]').forEach(x => x.onclick = () => { cf.k = x.dataset.k; render(); });
+  v.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { cf.view = x.dataset.v; render(); });
+  v.querySelectorAll('[data-cf]').forEach(x => x.onchange = () => { cf[x.dataset.cf] = x.value; render(); });
+  $('#cc').onchange = e => { cf.camp = e.target.value; render(); };
+  $('#cq').oninput = e => { cf.q = e.target.value; draw(); };
+  draw();
+}
+
 function render() {
   const v = $('#view'), active = S.filter(s => !s.do_not_call);
   document.querySelectorAll('nav [data-tab]').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
@@ -203,8 +277,7 @@ function render() {
     v.querySelectorAll('[data-lead]').forEach(x => x.onclick = () => { filter.lead_status = filter.lead_status === x.dataset.lead ? '' : x.dataset.lead; render(); });
     v.querySelectorAll('[data-brand]').forEach(x => x.onclick = () => { filter.potential = filter.potential === x.dataset.brand ? '' : x.dataset.brand; render(); });
   } else if (tab === 'campaign') {
-    v.innerHTML = values('campaign').map(c => { const r = S.filter(s => s.campaign === c); return `<h3>${esc(c)} (${r.length})</h3>${table(r)}`; }).join('')
-      || '<p>Chưa có campaign. Mở một khách và điền ô Campaign.</p>';
+    campaignView(v);
   } else if (tab === 'potential') {
     v.innerHTML = POT.map(p => { const r = active.filter(s => s.potential === p); return `<h3>${p} (${r.length})</h3>${table(r)}`; }).join('');
   } else if (tab === 'order') {
