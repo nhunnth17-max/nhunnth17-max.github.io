@@ -229,7 +229,7 @@ function campaignView(v) {
   };
   const fsel = (n, label, l) => `<select data-cf="${n}">${opts([['', label], ...l], cf[n])}</select>`;
   v.innerHTML = `<div class="head"><h2>${esc(cf.camp || 'Tất cả khách')}</h2><div class="row" style="margin:0">
-      <select id="cc">${opts([['','Tất cả khách'], ...camps.map(c => [c, esc(c)])], cf.camp)}</select>
+      <select id="cc">${opts([['','Tất cả khách'], ...camps.map(c => [esc(c), esc(c)])], esc(cf.camp))}</select>
       <button class="tg ${cf.view === 'list' ? 'on' : ''}" data-v="list">☰ Danh sách</button><button class="tg ${cf.view === 'table' ? 'on' : ''}" data-v="table">▦ Bảng</button></div></div>
     <div class="kpis">${Object.entries(K).map(([k,[t,c,f,sub]]) => `<button class="kpi ${c} ${cf.k === k ? 'on' : ''}" data-k="${k}"><small>${t}</small><b>${rows.filter(f).length}</b><em>${sub}</em></button>`).join('')}</div>
     <div class="row">${fsel('status','Status',Object.entries(STAGE))}${fsel('lead','Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Potential',POT.map(x => [x,x]))}
@@ -346,7 +346,7 @@ function edit(s = {}, ids = []) {
     ${sel('reason','Reason (lý do)',[['','—'], ...REASONS.map(x => [x,x])], s.reason || '')}
     ${sel('assigned_to','Giao cho',M.map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
     <label class="full" style="margin-top:14px"><input type="checkbox" name="do_not_call" ${s.do_not_call ? 'checked' : ''}> Không gọi</label>
-    <input type="hidden" name="timezone" value="${zone}">
+    <input type="hidden" name="timezone" value="${esc(zone)}">
     <datalist id="products">${PRODUCTS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
   </form>
   <form id="order" class="g" hidden>${fl('Số tiền $','<input name="amount" type="number" step="0.01" min="0.01" required>')}${fl('Sản phẩm','<input name="note">')}<button class="main full" style="margin-top:12px">Thêm đơn</button></form>
