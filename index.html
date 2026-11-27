@@ -52,6 +52,22 @@ nav button.on{color:#0068ff;background:#e5efff;border-top-color:#0068ff}
 .df button{background:#231b52;border:1px solid #3d3470;color:#e9e6ff;padding:12px 16px}.df button:disabled{opacity:.4}.df span{color:#9a94c4}
 .df .main{background:linear-gradient(135deg,#6b5cff,#5846e8);border:0}#help{border-color:#6b5cff!important;color:#a99dff!important}#inv{border-color:#8a6d2f!important;color:#f5c451!important}
 #dlg li{margin:6px 0;color:#c9c4ee}
+
+:root{color-scheme:dark}body{background:#0f0b26;color:#e9e6ff}
+input,select,textarea,button{background:#1c1640;border-color:#2f2860;color:#e9e6ff}
+#add{background:#1f1a45;border:0;box-shadow:0 0 18px #4b3fd966}#q{border-radius:99px;padding:14px 18px}
+.card{background:#161036}.head h2,h2,h3,h4{color:#e9e6ff}
+.scroll{border-color:#2f2860}table{background:#120d2e}td,th{border-bottom-color:#241d4d}
+th{background:#2a2063;color:#e9e6ff;border-bottom:2px solid #6b5cff}td button{color:#e9e6ff}.code{color:#8d86b8}
+nav{background:#1b1550;border-top-color:#2f2860}nav button{color:#9a94c4;background:none}nav button.on{background:#2a2063;color:#fff;border-top-color:#6b5cff}
+#menu{background:#1a1440;color:#e9e6ff;border-color:#2f2860}.grid button{background:#231b52}
+.stat{flex:0 0 170px;color:#e9e6ff;border:1px solid #2f2860;border-radius:18px;padding:16px;min-height:120px}
+.stat:nth-child(n){background:#102f3d}.stat:nth-child(4){background:#33262c}.stat:nth-child(5){background:#35153f}.stat:nth-child(6){background:#35182b}
+.stat:first-child{background:linear-gradient(135deg,#2a2063,#1c1640)}.stat:first-child b{color:#b6a9ff}
+.stat small{color:#9a94c4}.stat b{color:#2dd4bf}.stat em{display:block;font-style:normal;color:#8d86b8;margin-top:8px}.stat.on{border:2px solid #9d8cff}
+.bd{display:inline-block;border:1px solid;border-radius:99px;padding:5px 14px;font-weight:600;font-size:14px}
+.bd.gold{color:#f5c451;border-color:#8a6d2f;background:#33281a}.bd.green{color:#34d399;border-color:#1f6b57;background:#103a33}.bd.red{color:#ff6b6b;border-color:#8a3535;background:#3a1a22}
+.teal{color:#2dd4bf}.gold{color:#f5c451;font-weight:600}.ph{line-height:1.5}.ava{background:linear-gradient(135deg,#f08a6c,#e66f9a)}
 </style>
 </head>
 <body>
@@ -143,17 +159,26 @@ async function start() {
   me = m; await load();
 }
 
+const days = d => Math.floor((Date.now() - new Date(d)) / 864e5);
+const badge = (t, c) => `<span class="bd ${c}">${esc(t)}</span>`;
 function table(rows) {
-  return `<div class="scroll"><table><tr><th>Mã KH</th><th>Business name</th><th>Customer</th><th>SĐT</th><th>Bang</th><th>Potential</th><th>Status</th><th>Giờ ở tiệm</th><th>Lead</th><th>Brand</th><th>Gọi lại (giờ tiệm)</th></tr>${
-  rows.map(s => `<tr><td class="code">${esc(s.code)}</td><td><button data-id="${s.id}">${esc(s.name)}</button></td>
-  <td><span class="ava">${initials(s.assigned_to)}</span>${esc(s.owner)}</td><td>${esc(s.phone)}</td><td>${esc(s.state)}</td>
-  <td>${esc(s.potential)}</td><td class="${s.do_not_call?'dnc':''}">${s.do_not_call?'KHÔNG GỌI':STAGE[s.stage]}</td>
-  <td>${time(Date.now(), s.timezone)}</td><td>${esc(s.lead_source)}</td><td>${esc(s.brand)}</td>
-  <td class="${overdue(s)?'dnc':''}">${s.follow_up ? time(s.follow_up, s.timezone) : ''}</td></tr>`).join('') || '<tr><td colspan="11">Chưa có dữ liệu</td></tr>'}</table></div>`;
+  const head = ['Mã KH','Business name','Customer','Phone','State','Potential','Status','Lead status','Deadline','Ngày thêm','Sale'];
+  return `<div class="scroll"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(s => {
+    const f = s.follow_up && (new Date(s.follow_up) - Date.now()) / 864e5, a = days(s.created_at);
+    const st = s.do_not_call ? badge('Không gọi','red') : s.stage === 'ordered' ? badge('Completed','green') : badge('Follow','gold');
+    return `<tr><td class="code">${esc(s.code)}</td><td><button data-id="${s.id}">${esc(s.name)}</button></td>
+    <td><span class="ava">${initials(s.assigned_to)}</span>${esc(s.owner)}</td>
+    <td class="code ph">${esc(s.cellphone || s.phone)}${s.cellphone && s.cellphone !== s.phone ? `<br>${esc(s.phone)}` : ''}</td>
+    <td>${esc(ST[(s.state || '').toUpperCase()]?.[0] || s.state)}</td><td class="teal">${esc(s.brand)}</td><td>${st}</td>
+    <td>${s.reason ? `<span title="${esc(s.reason)}">${badge('Lost','red')}</span>` : '—'}</td>
+    <td>${s.follow_up && !s.do_not_call ? (f < 0 ? badge(`Hết hạn ${Math.ceil(-f)}d`,'red') : badge(`Còn ${Math.floor(f)}d`,'gold')) : '—'}</td>
+    <td class="gold">${a}d${a >= 7 && s.stage !== 'ordered' ? ' ⚠️' : ''}</td>
+    <td>${esc(M.find(m => m.user_id === s.assigned_to)?.name)}<br><small class="code">${esc(s.campaign)}</small></td></tr>`;
+  }).join('') || '<tr><td colspan="11">Chưa có dữ liệu</td></tr>'}</table></div>`;
 }
 function list() {
   const k = q.toLowerCase();
-  const rows = S.filter(s => [s.code,s.name,s.owner,s.phone,s.state].join(' ').toLowerCase().includes(k)
+  const rows = S.filter(s => [s.code,s.name,s.owner,s.owner2,s.phone,s.cellphone,s.state].join(' ').toLowerCase().includes(k)
     && FIELDS.every(([f]) => !filter[f] || s[f] === filter[f])
     && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
   $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
@@ -162,13 +187,12 @@ function render() {
   const v = $('#view'), active = S.filter(s => !s.do_not_call);
   document.querySelectorAll('nav [data-tab]').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
   if (tab === 'salons') {
-    const card = (label, n, stage) => `<button class="stat ${stage !== null && (filter.stage || '') === stage ? 'on' : ''}" ${stage === null ? '' : `data-stage="${stage}"`}><small>${esc(label)}</small><b>${n}</b></button>`;
+    const card = (label, n, attr, on, sub = '') => `<button class="stat ${on ? 'on' : ''}" ${attr}><small>${esc(label)}</small><b>${n}</b>${sub ? `<em>${sub}</em>` : ''}</button>`;
     const sel = (f, label, list) => `<select data-f="${f}">${opts([['',`Tất cả ${label}`], ...list], filter[f] || '')}</select>`;
     v.innerHTML = `<div class="head"><h2>Khách hàng</h2><button class="main" id="add">+ Thêm khách</button></div>
-      <input id="q" placeholder="Tìm tên, SĐT, mã KH, bang..." value="${esc(q)}">
-      <div class="cards">${card('Tổng data', S.length, '')}${card('Closedeal', S.filter(s => s.stage === 'ordered').length, 'ordered')}
-        ${card('Được giao cho tôi', S.filter(s => s.assigned_to === me.user_id).length, null)}
-        ${[...new Set([...PRODUCTS, ...values('brand')])].map(b => card(b, S.filter(s => s.brand === b).length, null)).join('')}</div>
+      <input id="q" placeholder="Tìm tên, SĐT, mã KH, công ty..." value="${esc(q)}">
+      <div class="cards">${card('Tổng data', S.length, 'data-stage=""', !filter.stage && !filter.brand, 'được giao')}${card('Closedeal', S.filter(s => s.stage === 'ordered').length, 'data-stage="ordered"', filter.stage === 'ordered', 'đã chốt')}
+        ${[...new Set([...PRODUCTS, ...values('brand')])].map(b => card(b, S.filter(s => s.brand === b).length, `data-brand="${esc(b)}"`, filter.brand === b)).join('')}</div>
       <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
         ${sel('late', 'hạn gọi', [['1','Chỉ quá hạn']])}${sel('month', 'tháng', [...new Set(S.map(monthOf))].sort().map(x => [x,x]))}</div>
       <div id="list"></div>`;
@@ -176,7 +200,8 @@ function render() {
     $('#q').oninput = e => { q = e.target.value; list(); };
     $('#add').onclick = () => edit();
     v.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { filter[x.dataset.f] = x.value; render(); });
-    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; render(); });
+    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; if (!x.dataset.stage) filter.brand = ''; render(); });
+    v.querySelectorAll('[data-brand]').forEach(x => x.onclick = () => { filter.brand = filter.brand === x.dataset.brand ? '' : x.dataset.brand; render(); });
   } else if (tab === 'campaign') {
     v.innerHTML = values('campaign').map(c => { const r = S.filter(s => s.campaign === c); return `<h3>${esc(c)} (${r.length})</h3>${table(r)}`; }).join('')
       || '<p>Chưa có campaign. Mở một khách và điền ô Campaign.</p>';
