@@ -205,7 +205,7 @@ function render() {
       <input id="q" placeholder="Tìm tên, SĐT, mã KH, công ty..." value="${esc(q)}">
       <div class="cards">${card('Tổng data', S.length, 'data-stage=""', !filter.stage && !filter.potential && !filter.lead_status, 'được giao')}${card('Closedeal', S.filter(s => s.lead_status === 'Closedeal').length, 'data-lead="Closedeal"', filter.lead_status === 'Closedeal', 'đã chốt')}
         ${[...new Set([...PRODUCTS, ...values('potential')])].map(b => card(b, S.filter(s => s.potential === b).length, `data-brand="${esc(b)}"`, filter.potential === b)).join('')}</div>
-      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'lead_status' ? [['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])] : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
+      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'potential' ? POT.map(x => [x,x]) : f === 'lead_status' ? [['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])] : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
         ${sel('late', 'hạn gọi', [['1','Chỉ quá hạn']])}${sel('month', 'tháng', [...new Set(S.map(monthOf))].sort().map(x => [x,x]))}</div>
       <div id="list"></div>`;
     list();
