@@ -96,25 +96,25 @@ nav button.on{color:#fff;background:#ffffff26;border-top-color:#fff}#out{color:#
 .ivw{max-width:1320px;margin:auto;display:grid;gap:16px}.ivw .iv{max-width:none;margin:0}
 .ivp .ivh{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.ivp .ivh b{flex:1 0 100%;font-size:11px;text-transform:uppercase;color:var(--mu);letter-spacing:.05em}.ivp .ivh button{flex:1}
 .ivp .paper{background:#fff;border:1px solid var(--ln);border-radius:10px;padding:28px 30px;box-shadow:0 6px 24px #081c3614;min-height:420px;font-size:13px}
-.paper{border-top:8px solid #0068ff;font-size:12.5px;color:#111;line-height:1.5}
-.paper .pp-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid #e3e7ee}
-.paper .pp-co h2{font-size:21px;color:#0a1f44;margin:0 0 3px}.paper .pp-co div{color:#4a5a70}
-.paper .pp-title{text-align:right;font-size:30px;font-weight:700;letter-spacing:.08em;color:#0068ff;line-height:1.1}.paper .pp-title small{display:block;font-size:12px;letter-spacing:0;font-weight:600;color:#4a5a70;margin-top:4px}
-.paper .pp-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}.paper .pp-meta div,.paper .pp-bill{background:#f3f7ff;border-radius:8px;padding:9px 12px}
-.paper small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#6b7b92;font-weight:600}.paper .pp-meta b,.paper .pp-note b{display:block;font-weight:600}
-.paper .pp-bill{margin-bottom:14px}.paper .pp-bill b{display:block;font-size:14px;color:#0a1f44}
-.paper table{width:100%;border-collapse:collapse;margin:0}.paper table th{background:#0068ff;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;text-align:left;border:0}.paper table th.r,.paper table td.r{text-align:right}
-.paper table td{padding:9px 10px;border:0;border-bottom:1px solid #e8ecf2;background:none;color:#111}.paper table tr:nth-child(even) td{background:#f8faff}
-.paper .pp-bot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:16px;align-items:flex-start}.paper .pp-note{flex:1 1 180px}.paper .pp-note small{margin-top:8px}
-.paper .pp-tot{width:270px;margin-left:auto}.paper .pp-tot>div{display:flex;justify-content:space-between;padding:4px 10px}.paper .pp-tot .g{border-top:1px solid #cfd8e6;margin-top:4px;padding-top:7px;font-weight:700;font-size:14px}
-.paper .pp-tot .due{background:#0068ff;color:#fff;border-radius:8px;padding:10px 12px;margin-top:6px;font-size:15px;font-weight:700}
-.paper .pp-ty{text-align:center;color:#6b7b92;margin:26px 0 0;padding-top:12px;border-top:1px solid #e3e7ee}
+.paper{--rd:#b3402e;font-size:12.5px;color:#111;line-height:1.5}
+.paper .pp-head{padding-bottom:14px;border-bottom:2px solid var(--rd)}.paper .pp-head h2{font-size:22px;color:var(--rd);margin:0 0 4px}.paper .pp-head div{color:#555;font-size:12px}
+.paper .pp-title{font-size:26px;font-weight:700;letter-spacing:.12em;color:var(--rd);margin:16px 0 10px}
+.paper .pp-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;margin-bottom:16px}.paper .pp-meta b{display:block;font-weight:400}
+.paper small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--rd);font-weight:700}
+.paper .pp-bar{background:var(--rd);color:#fff;font-weight:700;letter-spacing:.12em;font-size:11.5px;padding:7px 14px;border-radius:3px}
+.paper .pp-bill{padding:10px 0 14px;line-height:1.7}.paper .pp-bill b{display:block;color:var(--rd);font-size:15px;margin-bottom:2px}
+.paper table{width:100%;border-collapse:collapse;margin:0}.paper table th{background:var(--rd);color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;padding:10px;text-align:left;border:0}.paper table th.r,.paper table td.r{text-align:right}
+.paper table td{padding:14px 10px;border:0;border-bottom:1px solid #e5e5e5;background:none;color:#111}.paper .sk{display:block;font-size:11px;color:#777}
+.paper .pp-bot{display:flex;gap:24px;flex-wrap:wrap;border-top:2px solid var(--rd);margin-top:4px;padding-top:14px;align-items:flex-start}
+.paper .pp-terms{flex:1 1 230px;font-size:10.5px;color:#666;line-height:1.7}.paper .pp-terms p{margin:0 0 4px}
+.paper .pp-tot{width:260px;margin-left:auto}.paper .pp-tot>div{display:flex;justify-content:space-between;align-items:center;padding:4px 0}.paper .pp-tot span{color:#666}
+.paper .pp-tot .big{padding:8px 0}.paper .pp-tot .big b{font-size:24px;color:var(--rd)}.paper .pp-tot .due{font-weight:700}.paper .pp-tot .due span{color:#111}.paper .pp-tot .due b{color:var(--rd)}
+.paper .pp-ty{text-align:center;font-style:italic;font-weight:600;color:var(--rd);margin:18px 0 0;padding-top:12px;border-top:2px solid var(--rd)}
 #paper .paper{padding:6px 4px}@media print{.paper *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-.line{grid-template-columns:1fr 64px 92px 98px;gap:0 8px;align-items:end;position:relative;padding-top:30px;background:#fbfcfe}
+.line{grid-template-columns:1fr 56px 86px 96px;gap:0 8px;align-items:end;position:relative;padding-top:30px;background:#fbfcfe}
 .line .no{position:absolute;top:8px;left:12px;background:var(--bl);color:var(--b);border-radius:99px;padding:1px 10px;font-size:11px}
 .line .x{position:absolute;top:5px;right:8px;border:0;background:none;color:var(--mu);padding:3px 8px}.line .x:hover{color:#d93025}
-.line label,.line .am{margin:6px 0}.line .am span{display:block;font-size:11px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}.line .am b{display:block;padding:9px 0;text-align:right;color:var(--b);font-size:14px}
-.paper table td.n,.paper table th:first-child{width:30px;color:#6b7b92}.paper .sk{display:block;font-size:11px;color:#6b7b92;font-weight:400}
+.line label{margin:6px 0}.line .am{position:absolute;top:8px;right:40px;font-size:12px;color:var(--mu)}.line .am span{display:inline;margin:0 4px 0 0;font-size:12px}.line .am b{display:inline;color:var(--b);font-size:13px}.iv textarea{width:100%;font-size:12px}
 .mt{color:#9aa6b5;font-weight:400}
 @media (min-width:1000px){.ivw{grid-template-columns:minmax(380px,500px) minmax(0,1fr);align-items:start}.ivp{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
 #paper{display:none}@media print{body{background:#fff}body>*{display:none!important}body>#paper{display:block!important}}
@@ -438,16 +438,17 @@ const today = () => new Date().toLocaleDateString('en-CA');
 const PAY = ['Check','Zelle','Credit Card','Cash','Wire Transfer','Finance'];
 const DELIVERY = ['CUSTOMER WILL CALL','ASAP','PICK UP','PRE ORDER'];
 const store = {get: () => { try { return localStorage.getItem('company') || ''; } catch { return ''; } }, set: v => { try { localStorage.setItem('company', v); } catch {} }};
-const CO = {addr:'3112 N Jupiter Rd #102, Garland, TX 75044, Hoa Kỳ', phone:'+12147030018'};
+const CO = {addr:'3112 N Jupiter Rd #102, Garland, TX 75044, Hoa Kỳ', phone:'+12147030018', terms:'Full payment must be received prior to delivery or shipment.\nDeposits for all custom-made and pre-order items are non-refundable. If a custom or pre-order is canceled by the customer, the deposit will be forfeited. Custom-made items are non-refundable and non-returnable once produced.\nEligible returned items will be refunded minus original shipping fees and a 30% restocking fee.\nWe reserve the right to withhold or repossess any unpaid merchandise if full payment is not received.'};
 const coGet = k => { try { const v = localStorage.getItem('co_' + k); return v === null ? CO[k] : v; } catch { return CO[k]; } };
 const coSet = (k, v) => { try { localStorage.setItem('co_' + k, v); } catch {} };
-const newLine = () => ({name:'', sku:'', qty:1, price:''});
-const newInv = (salon = null) => ({company: store.get(), addr: coGet('addr'), phone: coGet('phone'), date: today(), po:'', location: salon ? ST[(salon.state || '').toUpperCase()]?.[0] || '' : '', delivery:'CUSTOMER WILL CALL',
+const newLine = () => ({name:'', sku:'', qty:1, price:'', disc:''});
+const newInv = (salon = null) => ({company: store.get(), addr: coGet('addr'), phone: coGet('phone'), terms: coGet('terms'), date: today(), po:'', location: salon ? ST[(salon.state || '').toUpperCase()]?.[0] || '' : '', delivery:'CUSTOMER WILL CALL',
   salon: salon?.id || null, lines:[newLine()], tax:'', deposit:'', method:'', discount:'', fee:'', warranty:'12', note:'', saved:false});
 let inv = null;
 const cents = v => Math.round((Number(v) || 0) * 100);
+const lineAmt = l => Math.round((Number(l.qty) || 0) * (cents(l.price) - cents(l.disc)));
 function totals() {
-  const sub = inv.lines.reduce((a,l) => a + Math.round((Number(l.qty) || 0) * cents(l.price)), 0);
+  const sub = inv.lines.reduce((a,l) => a + lineAmt(l), 0);
   const total = sub + cents(inv.tax) + cents(inv.fee) - cents(inv.discount);
   return [['Subtotal', sub], ['Tax', cents(inv.tax)], ['Charge Fee', cents(inv.fee)], ['Extra Discount', -cents(inv.discount)], ['Total', total], ['Deposit', cents(inv.deposit)], ['Balance Due', total - cents(inv.deposit)]];
 }
@@ -457,7 +458,7 @@ const address = x => [x.address, x.city, [x.state, x.zip].filter(Boolean).join('
 function checkInv() {
   const t = Object.fromEntries(totals()), items = inv.lines.filter(l => l.name.trim() || l.price !== '');
   const why = !inv.company.trim() ? 'Chưa điền tên công ty.' : !S.some(s => s.id === inv.salon) ? 'Chưa chọn khách hàng.'
-    : !items.length || items.some(l => !l.name.trim() || !(Number(l.qty) > 0) || l.price === '' || Number(l.price) < 0) ? 'Mỗi sản phẩm cần tên, số lượng và giá.'
+    : !items.length || items.some(l => !l.name.trim() || !(Number(l.qty) > 0) || l.price === '' || Number(l.price) < 0 || Number(l.disc) < 0 || cents(l.disc) > cents(l.price)) ? 'Mỗi sản phẩm cần tên, số lượng, giá (giảm giá không được âm hoặc lớn hơn giá).'
     : [inv.tax, inv.deposit, inv.discount, inv.fee].some(v => Number(v) < 0) ? 'Số tiền không được âm.'
     : t.Total <= 0 ? 'Total phải lớn hơn 0.' : t['Balance Due'] < 0 ? 'Deposit lớn hơn Total.' : '';
   if (why) { alert(why); return false; }
@@ -465,17 +466,21 @@ function checkInv() {
   return true;
 }
 function paperHTML(live) {
-  const x = S.find(s => s.id === inv.salon) || {}, or = (v, t) => esc(v) || (live ? `<span class="mt">${t}</span>` : '');
-  const rows = inv.lines.filter(l => l.name.trim()), T = Object.fromEntries(totals());
-  const row = (k, c) => `<div><span>${k}</span><b>${usd(c)}</b></div>`;
-  const co = [esc(inv.addr), esc(inv.phone) && 'Tel: ' + esc(inv.phone)].filter(Boolean).map(l => `<div>${l}</div>`).join('');
-  return `<div class="paper"><div class="pp-head"><div class="pp-co"><h2>${or(inv.company, 'Tên công ty')}</h2>${co}</div><div class="pp-title">INVOICE<small>${or(inv.po, 'PO tự tạo khi tải')}</small></div></div>
-    <div class="pp-meta"><div><small>Date</small><b>${esc(inv.date)}</b></div><div><small>Location</small><b>${esc(inv.location) || '-'}</b></div><div><small>Requested Delivery</small><b>${esc(inv.delivery)}</b></div></div>
-    <div class="pp-bill"><small>Bill to</small><b>${or(x.name, 'Chọn khách hàng')}</b>${[x.owner, x.cellphone || x.phone].filter(Boolean).map(esc).join(' · ')}${address(x) ? `<br>${esc(address(x))}` : ''}</div>
-    <table><tr><th>#</th><th>Item</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>${rows.map((l, n) => `<tr><td class="n">${n + 1}</td><td><b>${esc(l.name)}</b>${l.sku ? `<span class="sk">SKU: ${esc(l.sku)}</span>` : ''}</td><td class="r">${esc(l.qty)}</td><td class="r">${usd(cents(l.price))}</td><td class="r"><b>${usd(Math.round(Number(l.qty) * cents(l.price)))}</b></td></tr>`).join('') || (live ? '<tr><td colspan="5" class="mt" style="text-align:center;padding:26px">Chưa có sản phẩm</td></tr>' : '')}</table>
-    <div class="pp-bot"><div class="pp-note"><small>Payment method</small><b>${esc(inv.method || '-')}</b><small>Warranty</small><b>${inv.warranty === '0' ? 'None' : esc(inv.warranty) + ' months'}</b>${inv.note ? `<small>Note</small><b>${esc(inv.note)}</b>` : ''}</div>
-    <div class="pp-tot">${row('Subtotal', T.Subtotal)}${row('Tax', T.Tax)}${row('Charge Fee', T['Charge Fee'])}${row('Extra Discount', T['Extra Discount'])}${row('Total', T.Total).replace('<div>', '<div class="g">')}${row('Deposit', T.Deposit)}<div class="due"><span>Balance Due</span><b>${usd(T['Balance Due'])}</b></div></div></div>
-    <p class="pp-ty">Thank you for your business!</p></div>`;
+  const x = S.find(s => s.id === inv.salon) || {}, or = (v, t) => esc(v) || (live ? `<span class="mt">${t}</span>` : ''), T = Object.fromEntries(totals());
+  const rows = inv.lines.filter(l => l.name.trim());
+  const m = (k, v) => `<div><small>${k}</small><b>${v}</b></div>`, r = (k, c) => `<div><span>${k}</span><b>${usd(c)}</b></div>`;
+  const co = [esc(inv.addr), esc(inv.phone)].filter(Boolean).map(l => `<div>${l}</div>`).join('');
+  const bill = [['Customer Name', x.owner], ['Business Phone', x.phone], ['Cellphone', x.cellphone], ['Address', address(x)]].filter(([, v]) => v).map(([k, v]) => `<div>${k}: ${esc(v)}</div>`).join('');
+  const terms = [inv.warranty !== '0' && `Includes a ${inv.warranty}-month warranty.`, ...String(inv.terms || '').split('\n'), inv.note && 'Note: ' + inv.note].filter(l => l && l.trim()).map(l => `<p>* ${esc(l)}</p>`).join('');
+  const extra = ['Tax', 'Charge Fee', 'Extra Discount'].filter(k => T[k]).map(k => r(k, T[k])).join('');
+  return `<div class="paper"><div class="pp-head"><h2>${or(inv.company, 'Tên công ty')}</h2>${co}</div>
+    <div class="pp-title">INVOICE</div>
+    <div class="pp-meta">${m('Date', esc(inv.date))}${m('PO Number', or(inv.po, 'tự tạo khi tải'))}${m('Customer ID', esc(x.code) || '-')}${m('Sale Rep', esc(me.name) || '-')}${m('Location', esc(inv.location) || '-')}${m('Requested Delivery', esc(inv.delivery))}${m('Payment Method', esc(inv.method) || '-')}</div>
+    <div class="pp-bar">BILL TO</div>
+    <div class="pp-bill"><b>${or(x.name, 'Chọn khách hàng')}</b>${bill}</div>
+    <table><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Discount</th><th class="r">Amount</th></tr>${rows.map(l => `<tr><td>${esc(l.name)}${l.sku ? `<span class="sk">SKU: ${esc(l.sku)}</span>` : ''}</td><td class="r">${esc(l.qty)}</td><td class="r">${usd(cents(l.price))}</td><td class="r">${usd(cents(l.disc))}</td><td class="r"><b>${usd(lineAmt(l))}</b></td></tr>`).join('') || (live ? '<tr><td colspan="5" class="mt" style="text-align:center;padding:26px">Chưa có sản phẩm</td></tr>' : '')}</table>
+    <div class="pp-bot"><div class="pp-terms">${terms}</div><div class="pp-tot">${r('Subtotal', T.Subtotal)}${extra}<div class="big"><span>Total</span><b>${usd(T.Total)}</b></div>${r('Deposit', T.Deposit)}<div class="due"><span>Balance Due</span><b>${usd(T['Balance Due'])}</b></div></div></div>
+    <p class="pp-ty">'Thank You for Your Business'</p></div>`;
 }
 function invoiceView(v) {
   inv = inv || newInv();
@@ -488,19 +493,19 @@ function invoiceView(v) {
     <h4>Khách hàng</h4>${x ? `<div class="card"><button type="button" id="unpick" style="float:right">✕</button><b>${esc(x.name)}</b><br>${[x.owner, x.cellphone, x.phone].filter(Boolean).map(esc).join(' | ')}<br>${esc(address(x))}</div>`
       : `<label><span>Tìm khách hàng (Mã KH, tên, SĐT)</span><input id="ik" placeholder="Nhập để tìm..." autocomplete="off"></label><div id="hits"></div>`}
     <h4>Sản phẩm</h4><datalist id="pl">${P.map(p => `<option value="${esc(p.name)}">${esc([p.sku, money(p.price), p.category].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
-    ${inv.lines.map((l,i) => `<div class="card line"><b class="no">Sản phẩm ${i+1}</b><button type="button" class="x" data-rm="${i}" title="Xoá dòng">✕</button>${[['name','Tên sản phẩm hoặc SKU','list="pl" placeholder="Gõ để tìm trong danh mục..."','w'],['sku','SKU','placeholder="SKU"',''],['qty','SL','type="number" min="1" step="1"',''],['price','Đơn giá ($)','type="number" min="0" step="0.01" placeholder="0.00"','']].map(([k,t,a,c]) => `<label class="${c}"><span>${t}</span><input data-l="${i}" data-k="${k}" value="${esc(l[k])}" ${a}></label>`).join('')}<div class="am"><span>Thành tiền</span><b data-amt="${i}">${usd(Math.round((Number(l.qty) || 0) * cents(l.price)))}</b></div></div>`).join('')}
+    ${inv.lines.map((l,i) => `<div class="card line"><b class="no">Sản phẩm ${i+1}</b><button type="button" class="x" data-rm="${i}" title="Xoá dòng">✕</button>${[['name','Tên sản phẩm hoặc SKU','list="pl" placeholder="Gõ để tìm trong danh mục..."','w'],['sku','SKU','placeholder="SKU"',''],['qty','SL','type="number" min="1" step="1"',''],['price','Đơn giá ($)','type="number" min="0" step="0.01" placeholder="0.00"',''],['disc','Giảm/đơn vị ($)','type="number" min="0" step="0.01" placeholder="0"','']].map(([k,t,a,c]) => `<label class="${c}"><span>${t}</span><input data-l="${i}" data-k="${k}" value="${esc(l[k])}" ${a}></label>`).join('')}<div class="am"><span>Thành tiền</span><b data-amt="${i}">${usd(lineAmt(l))}</b></div></div>`).join('')}
     <button type="button" id="more" style="width:100%;border-style:dashed">+ Thêm sản phẩm</button>
     <h4>Thanh toán</h4>${num('tax','Tax ($) — tự nhập')}${num('deposit','Deposit ($)')}
     <label><span>Phương thức thanh toán</span><select data-i="method">${opts([['','-- Không chọn --'], ...PAY.map(p => [p,p])], inv.method)}</select></label>
     ${num('discount','Extra Discount ($)')}${num('fee','Charge Fee ($)')}
     <label><span>Bảo hành</span><select data-i="warranty">${opts([['0','Không'],['6','6 tháng'],['12','12 tháng'],['24','24 tháng']], inv.warranty)}</select></label>
-    ${f('note','Ghi chú','placeholder="Ghi chú..."')}
+    ${f('note','Ghi chú','placeholder="Ghi chú..."')}<label><span>Điều khoản (cuối invoice, mỗi dòng 1 ý)</span><textarea data-i="terms" rows="7">${esc(inv.terms)}</textarea></label>
     </div>
     <aside class="ivp"><div class="ivh"><b>Bản invoice gửi khách (cập nhật trực tiếp)</b><button type="button" id="rs">Reset</button><button type="button" class="main" id="pdf">Tải PDF / In</button><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : 'Lưu thành đơn hàng'}</button></div>
     <div id="live">${paperHTML(true)}</div></aside></div>`;
   const again = () => invoiceView(v);
-  const changed = () => { inv.saved = false; v.querySelectorAll('[data-amt]').forEach(e => { const l = inv.lines[e.dataset.amt]; e.textContent = usd(Math.round((Number(l.qty) || 0) * cents(l.price))); }); $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
-  v.querySelectorAll('[data-i]').forEach(el => el.oninput = () => { inv[el.dataset.i] = el.value; if (el.dataset.i === 'company') store.set(el.value); if (['addr','phone'].includes(el.dataset.i)) coSet(el.dataset.i, el.value); changed(); });
+  const changed = () => { inv.saved = false; v.querySelectorAll('[data-amt]').forEach(e => { const l = inv.lines[e.dataset.amt]; e.textContent = usd(lineAmt(l)); }); $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
+  v.querySelectorAll('[data-i]').forEach(el => el.oninput = () => { inv[el.dataset.i] = el.value; if (el.dataset.i === 'company') store.set(el.value); if (['addr','phone','terms'].includes(el.dataset.i)) coSet(el.dataset.i, el.value); changed(); });
   v.querySelectorAll('[data-l]').forEach(el => el.oninput = () => { inv.lines[el.dataset.l][el.dataset.k] = el.value; changed(); });
   v.querySelectorAll('[data-k=name]').forEach(el => el.onchange = () => {   // chọn từ danh mục thì tự điền SKU và giá
     const k = el.value.trim().toLowerCase(), p = P.find(p => p.name.toLowerCase() === k || (p.sku || '').toLowerCase() === k);
