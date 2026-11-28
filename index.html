@@ -130,6 +130,7 @@ nav button.on{color:#fff;background:#ffffff26;border-top-color:#fff}#out{color:#
 .dk .scroll{background:#1a1830;border-color:#2f2b57;border-radius:18px}.dk td{color:#e8e8f5;border-color:#2f2b57}.dk th{background:#24214a;color:#a9a6ff;border-bottom-color:#6d5dfc}
 .dk .rank div{background:#24214a;border-radius:4px}.dk .rank div i{background:#6d5dfc}.dk .rank em{color:#111}
 .vbox{background:#fbfcfe;border:1px solid var(--ln);border-radius:10px;padding:4px 12px 12px;margin:0 0 8px}
+#pv .paper{padding:18px 20px}
 .mt{color:#9aa6b5;font-weight:400}
 @media (min-width:1000px){.ivw{grid-template-columns:minmax(380px,500px) minmax(0,1fr);align-items:start}.ivp{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
 #paper{display:none}@media print{body{background:#fff}body>*{display:none!important}body>#paper{display:block!important}}
@@ -239,7 +240,7 @@ const overdue = s => s.follow_up && new Date(s.follow_up) < new Date() && !s.do_
 const monthOf = s => s.created_at.slice(0,7);
 const values = k => [...new Set(S.map(s => s[k]).filter(Boolean))].sort();
 const initials = id => esc((M.find(m => m.user_id === id)?.name || '?').slice(0,2).toUpperCase());
-let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [], P = [], noProducts = false, pq = '', noDaily = false, dailyErr = '';
+let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [], P = [], noProducts = false, pq = '', noDaily = false, dailyErr = '', invMode = 'list', noInvCol = false, invq = '';
 
 const time = (d, tz) => new Date(d).toLocaleString('vi-VN', {timeZone: tz, dateStyle:'short', timeStyle:'short'});
 const money = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2});
@@ -265,7 +266,7 @@ async function load() {
   S.forEach(s => { if (s.stage === 'interested') s.stage = 'called'; });
   me = M.find(m => m.user_id === me.user_id);
   await loadProducts();
-  { const ar = await db.from('activity').select('id').range(0, 0); noDaily = !!ar.error; dailyErr = ar.error ? ar.error.message : ''; }
+  { const ar = await db.from('activity').select('id').range(0, 0); noDaily = !!ar.error; dailyErr = ar.error ? ar.error.message : ''; const ir = await db.from('orders').select('invoice').range(0, 0); noInvCol = !!ir.error; }
   render();
 }
 async function start() {
@@ -467,10 +468,10 @@ const newInv = (salon = null) => ({company: vPick().name, addr: vPick().addr, ph
 let inv = null;
 const cents = v => Math.round((Number(v) || 0) * 100);
 const lineAmt = l => Math.round((Number(l.qty) || 0) * (cents(l.price) - cents(l.disc)));
-function totals() {
-  const sub = inv.lines.reduce((a,l) => a + lineAmt(l), 0);
-  const total = sub + cents(inv.tax) + cents(inv.fee) - cents(inv.discount);
-  return [['Subtotal', sub], ['Tax', cents(inv.tax)], ['Charge Fee', cents(inv.fee)], ['Extra Discount', -cents(inv.discount)], ['Total', total], ['Deposit', cents(inv.deposit)], ['Balance Due', total - cents(inv.deposit)]];
+function totals(I = inv) {
+  const sub = I.lines.reduce((a,l) => a + lineAmt(l), 0);
+  const total = sub + cents(I.tax) + cents(I.fee) - cents(I.discount);
+  return [['Subtotal', sub], ['Tax', cents(I.tax)], ['Charge Fee', cents(I.fee)], ['Extra Discount', -cents(I.discount)], ['Total', total], ['Deposit', cents(I.deposit)], ['Balance Due', total - cents(I.deposit)]];
 }
 const usd = c => (c < 0 ? '-' : '') + money(Math.abs(c) / 100);
 const sumHTML = () => totals().map(([k,c]) => `<div class="${['Total','Balance Due'].includes(k) ? 't' : ''}"><span>${k}</span><b>${usd(c)}</b></div>`).join('');
@@ -485,23 +486,47 @@ function checkInv() {
   if (!inv.po) { inv.po = 'PO-' + new Date().toISOString().replace(/\D/g,'').slice(2,14); const f = $('[data-i=po]'); if (f) f.value = inv.po; }
   return true;
 }
-function paperHTML(live) {
-  const x = S.find(s => s.id === inv.salon) || {}, or = (v, t) => esc(v) || (live ? `<span class="mt">${t}</span>` : ''), T = Object.fromEntries(totals());
-  const rows = inv.lines.filter(l => l.name.trim());
+function paperHTML(live, I = inv) {
+  const x = I.bill || S.find(s => s.id === I.salon) || {}, or = (v, t) => esc(v) || (live ? `<span class="mt">${t}</span>` : ''), T = Object.fromEntries(totals(I));
+  const rows = I.lines.filter(l => l.name.trim());
   const m = (k, v) => `<div><small>${k}</small><b>${v}</b></div>`, r = (k, c) => `<div><span>${k}</span><b>${usd(c)}</b></div>`;
-  const co = [esc(inv.addr), esc(inv.phone)].filter(Boolean).map(l => `<div>${l}</div>`).join('');
+  const co = [esc(I.addr), esc(I.phone)].filter(Boolean).map(l => `<div>${l}</div>`).join('');
   const bill = [['Customer Name', x.owner], ['Business Phone', x.phone], ['Cellphone', x.cellphone], ['Address', address(x)]].map(([k, v]) => `<div>${k}: ${esc(v) || '-'}</div>`).join('');
-  const terms = [inv.warranty !== '0' && `Includes a ${inv.warranty}-month warranty.`, ...String(inv.terms || '').split('\n'), inv.note && 'Note: ' + inv.note].filter(l => l && l.trim()).map(l => `<p>* ${esc(l)}</p>`).join('');
+  const terms = [I.warranty !== '0' && `Includes a ${I.warranty}-month warranty.`, ...String(I.terms || '').split('\n'), I.note && 'Note: ' + I.note].filter(l => l && l.trim()).map(l => `<p>* ${esc(l)}</p>`).join('');
   const extra = ['Tax', 'Charge Fee', 'Extra Discount'].filter(k => T[k]).map(k => r(k, T[k])).join('');
-  const col = /^#[0-9a-f]{6}$/i.test(inv.color) ? inv.color : CO.color;
-  return `<div class="paper" style="--rd:${col}"><div class="pp-head"><h2>${or(inv.company, 'Tên công ty')}</h2>${co}</div>
+  const col = /^#[0-9a-f]{6}$/i.test(I.color) ? I.color : CO.color;
+  return `<div class="paper" style="--rd:${col}"><div class="pp-head"><h2>${or(I.company, 'Tên công ty')}</h2>${co}</div>
     <div class="pp-title">INVOICE</div>
-    <div class="pp-meta">${m('Date', esc(inv.date))}${m('PO Number', or(inv.po, 'tự tạo khi tải'))}${m('Customer ID', esc(x.code) || '-')}${m('Sale Rep', esc(me.name) || '-')}${m('Location', esc(inv.location) || '-')}${m('Requested Delivery', esc(inv.delivery))}${m('Payment Method', esc(inv.method) || '-')}</div>
+    <div class="pp-meta">${m('Date', esc(I.date))}${m('PO Number', or(I.po, 'tự tạo khi tải'))}${m('Customer ID', esc(x.code) || '-')}${m('Sale Rep', esc(I.rep || me.name) || '-')}${m('Location', esc(I.location) || '-')}${m('Requested Delivery', esc(I.delivery))}${m('Payment Method', esc(I.method) || '-')}</div>
     <div class="pp-bar">BILL TO</div>
     <div class="pp-bill"><b>${or(x.name, 'Chọn khách hàng')}</b>${bill}</div>
     <table><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Discount</th><th class="r">Amount</th></tr>${rows.map(l => `<tr><td>${esc(l.name)}${l.sku ? `<span class="sk">SKU: ${esc(l.sku)}</span>` : ''}</td><td class="r">${esc(l.qty)}</td><td class="r">${usd(cents(l.price))}</td><td class="r">${usd(cents(l.disc))}</td><td class="r"><b>${usd(lineAmt(l))}</b></td></tr>`).join('') || (live ? '<tr><td colspan="5" class="mt" style="text-align:center;padding:26px">Chưa có sản phẩm</td></tr>' : '')}</table>
     <div class="pp-bot"><div class="pp-terms">${terms}</div><div class="pp-tot">${r('Subtotal', T.Subtotal)}${extra}<div class="big"><span>Total</span><b>${usd(T.Total)}</b></div>${r('Deposit', T.Deposit)}<div class="due"><span>Balance Due</span><b>${usd(T['Balance Due'])}</b></div></div></div>
     <p class="pp-ty">'Thank You for Your Business'</p></div>`;
+}
+const printPaper = I => { const old = document.title; $('#paper').innerHTML = paperHTML(false, I); document.title = I.po || old; window.print(); document.title = old; };
+function invoiceList(v) {
+  const rows = O.filter(o => o.invoice && (isAdmin() || o.user_id === me.user_id)).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+  v.innerHTML = `<div class="head"><h2>Invoice (${rows.length})</h2><button class="main" id="invnew">+ Tạo invoice mới</button></div>
+    ${noInvCol ? '<div class="card">Để lưu invoice và xem lại ở đây, admin chạy lệnh này trong Supabase (SQL Editor, Run) rồi tải lại trang:<br><code>alter table public.orders add column if not exists invoice jsonb;</code><br><small>Trước khi chạy, invoice mới tạo chưa được lưu lại để xem sau.</small></div>' : ''}
+    <input id="invq" placeholder="Tìm PO, tên tiệm, mã KH, sale..." value="${esc(invq)}" style="width:100%;margin:10px 0"><p id="ivs"></p><div class="scroll" id="ivt"></div>`;
+  const draw = () => {
+    const k = invq.trim().toLowerCase(), who = o => M.find(m => m.user_id === o.user_id)?.name || '';
+    const list = rows.filter(o => !k || [o.invoice.po, o.invoice.bill?.name, o.invoice.bill?.code, who(o)].join(' ').toLowerCase().includes(k));
+    $('#ivs').innerHTML = `<small>${list.length} invoice · tổng ${money(list.reduce((a, o) => a + (Number(o.amount) || 0), 0))}</small>`;
+    $('#ivt').innerHTML = `<table><tr><th>Ngày</th><th>PO</th><th>Khách</th><th>Sale</th><th>Total</th><th>Còn nợ</th><th>Trạng thái</th><th></th></tr>${list.map(o => {
+      const I = o.invoice, T = Object.fromEntries(totals(I));
+      return `<tr><td>${time(o.created_at)}</td><td><b>${esc(I.po)}</b></td><td>${esc(I.bill?.name)}<br><small>${esc(I.bill?.code)}</small></td><td>${esc(who(o))}</td><td>${usd(T.Total)}</td><td>${usd(T['Balance Due'])}</td><td><span class="bd ${o.approved_at ? 'blue' : 'red'}">${o.approved_at ? 'Đã duyệt' : 'Chờ duyệt'}</span></td><td><button type="button" data-view="${o.id}">Xem / In</button></td></tr>`;
+    }).join('') || '<tr><td colspan="8">Chưa có invoice nào được lưu</td></tr>'}</table>`;
+    $('#ivt').querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+      const o = O.find(x => x.id == b.dataset.view);
+      $('#pv').innerHTML = `${paperHTML(false, o.invoice)}<div class="bar"><button type="button" id="pc">Đóng</button><button type="button" class="main" id="pp">Tải PDF</button></div>`;
+      $('#pv').showModal(); $('#pc').onclick = () => $('#pv').close(); $('#pp').onclick = () => printPaper(o.invoice);
+    });
+  };
+  draw();
+  $('#invq').oninput = e => { invq = e.target.value; draw(); };
+  $('#invnew').onclick = () => { if (!inv || inv.saved) inv = newInv(); invMode = 'new'; render(); };
 }
 function invoiceView(v) {
   inv = inv || newInv();
@@ -510,7 +535,7 @@ function invoiceView(v) {
   const f = (k, label, attr = '') => `<label><span>${label}</span><input data-i="${k}" value="${esc(inv[k])}" ${attr}></label>`;
   const num = (k, label) => f(k, label, 'type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"');
   const x = S.find(s => s.id === inv.salon);
-    v.innerHTML = `<div class="ivw"><div class="iv"><h2>Tạo Invoice mới</h2><small>${esc(me.name)}</small>
+    v.innerHTML = `<div class="ivw"><div class="iv"><button type="button" id="back" style="float:right">← Danh sách invoice</button><h2>Tạo Invoice mới</h2><small>${esc(me.name)}</small>
     <h4>Vendor</h4><label><span>Vendor</span><select data-vsel>${VEND.map(v => `<option value="${esc(v.name)}" ${v.name === inv.company ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select></label>
     <div class="bar" style="margin:0 0 8px"><button type="button" id="vedit">Sửa vendor</button><button type="button" id="vnew">+ Thêm vendor</button></div>
     ${vedit !== null ? `<div class="vbox"><label><span>Tên vendor</span><input id="v_name" value="${esc(vedit === 'new' ? '' : VEND[vedit].name)}"></label><label><span>Địa chỉ</span><input id="v_addr" value="${esc(vedit === 'new' ? '' : VEND[vedit].addr)}" placeholder="Số nhà, đường, thành phố, bang, zip"></label><label><span>Số điện thoại</span><input id="v_phone" type="tel" value="${esc(vedit === 'new' ? '' : VEND[vedit].phone)}"></label><div class="bar" style="margin:0"><button type="button" id="vcancel">Huỷ</button>${vedit !== 'new' && VEND.length > 1 ? '<button type="button" id="vdel">Xoá</button>' : ''}<button type="button" class="main" id="vsave">Lưu vendor</button></div></div>` : ''}
@@ -527,10 +552,10 @@ function invoiceView(v) {
     <label><span>Bảo hành</span><select data-i="warranty">${opts([['0','Không'],['6','6 tháng'],['12','12 tháng'],['24','24 tháng']], inv.warranty)}</select></label>
     ${f('note','Ghi chú','placeholder="Ghi chú..."')}<label><span>Điều khoản (cuối invoice, mỗi dòng 1 ý)</span><textarea data-i="terms" rows="7">${esc(inv.terms)}</textarea></label>
     </div>
-    <aside class="ivp"><div class="ivh"><b>Bản invoice gửi khách (cập nhật trực tiếp)</b><button type="button" id="rs">Reset</button><button type="button" class="main" id="pdf">Tải PDF / In</button><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : 'Lưu thành đơn hàng'}</button></div>
+    <aside class="ivp"><div class="ivh"><b>Bản invoice gửi khách (cập nhật trực tiếp)</b><button type="button" id="rs">Reset</button><button type="button" class="main" id="pdf">Tải PDF / In</button><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : 'Lưu invoice'}</button></div>
     <div id="live">${paperHTML(true)}</div></aside></div>`;
   const again = () => invoiceView(v);
-  const changed = () => { inv.saved = false; v.querySelectorAll('[data-amt]').forEach(e => { const l = inv.lines[e.dataset.amt]; e.textContent = usd(lineAmt(l)); }); $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
+  const changed = () => { inv.saved = false; v.querySelectorAll('[data-amt]').forEach(e => { const l = inv.lines[e.dataset.amt]; e.textContent = usd(lineAmt(l)); }); $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu invoice'; };
   v.querySelector('[data-vsel]').onchange = e => { applyVendor(VEND.find(x => x.name === e.target.value) || VEND[0]); changed(); };
   $('#vedit').onclick = () => { vedit = Math.max(0, VEND.findIndex(x => x.name === inv.company)); again(); };
   $('#vnew').onclick = () => { vedit = 'new'; again(); };
@@ -562,18 +587,21 @@ function invoiceView(v) {
     $('#hits').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { const s = S.find(y => y.id == b.dataset.pick); inv.salon = s.id; inv.location = ST[(s.state || '').toUpperCase()]?.[0] || inv.location; inv.saved = false; again(); });
   };
   $('#rs').onclick = () => { if (confirm('Xoá hết thông tin đang nhập?')) { inv = newInv(); again(); } };
-  const print = () => { const old = document.title; $('#paper').innerHTML = paperHTML(); document.title = inv.po; window.print(); document.title = old; };
+  const print = () => printPaper(inv);
+  $('#back').onclick = () => { invMode = 'list'; render(); };
   $('#pdf').onclick = () => { if (checkInv()) print(); };
   $('#keep').onclick = async e => {
     if (!checkInv() || !confirm('Lưu invoice này thành đơn hàng và tính vào doanh số?')) return;
     e.target.disabled = true;
     const items = inv.lines.filter(l => l.name.trim()).map(l => `${l.name} x${l.qty}`).join(', ');
     try {
-      await run(db.from('orders').insert({salon_id: inv.salon, amount: Object.fromEntries(totals()).Total / 100, note: `${inv.po}: ${items}`}));
+      const sx = S.find(z => z.id === inv.salon) || {}, snap = {...inv, saved: undefined, rep: me.name, bill: {code: sx.code, name: sx.name, owner: sx.owner, phone: sx.phone, cellphone: sx.cellphone, address: sx.address, city: sx.city, state: sx.state, zip: sx.zip}};
+      await run(db.from('orders').insert({salon_id: inv.salon, amount: Object.fromEntries(totals()).Total / 100, note: `${inv.po}: ${items}`, ...(noInvCol ? {} : {invoice: JSON.parse(JSON.stringify(snap))})}));
     } catch { e.target.disabled = false; return; }
     inv.saved = true; e.target.textContent = '✓ Đã lưu thành đơn';
     await run(db.from('salons').update({stage:'ordered', lead_status:'Closedeal'}).eq('id', inv.salon));
     O = await all('orders'); S = await all('salons');
+    inv = null; invMode = 'list'; render();
   };
 }
 
@@ -735,7 +763,7 @@ function render() {
   } else if (tab === 'product') {
     productView(v);
   } else if (tab === 'invoice') {
-    invoiceView(v);
+    invMode === 'new' ? invoiceView(v) : invoiceList(v);
   } else if (tab === 'order') {
     v.innerHTML = `<h2>Order</h2><div class="scroll"><table><tr><th>Ngày</th><th>Tiệm</th><th>Số tiền</th><th>Sản phẩm</th><th>Nhân viên</th></tr>${[...O].reverse().map(o => {
       const x = S.find(s => s.id === o.salon_id);
@@ -816,7 +844,7 @@ function edit(s = {}, ids = []) {
   d.querySelectorAll('[data-close]').forEach(b => b.onclick = () => d.close());
   if (i >= 0) { d.querySelector('#prev') && (d.querySelector('#prev').onclick = () => go(-1)); d.querySelector('#next') && (d.querySelector('#next').onclick = () => go(1)); }
   if (s.id) {
-    d.querySelector('#inv').onclick = () => { inv = newInv(s); d.close(); tab = 'invoice'; load(); };
+    d.querySelector('#inv').onclick = () => { inv = newInv(s); invMode = 'new'; d.close(); tab = 'invoice'; load(); };
     d.querySelector('#help').onclick = async () => {
       const n = prompt('Bạn cần hỗ trợ gì?'); if (!n) return;
       await run(db.from('calls').insert({salon_id: s.id, result: 'Nhờ hỗ trợ', note: n})); d.close(); await load();
@@ -857,7 +885,7 @@ document.addEventListener('click', e => {
     if (m.n >= m.rows.length) b.remove(); else b.textContent = `Xem thêm (đang hiện ${m.n}/${m.rows.length})`;
   }
   if (b.id === 'apps') $('#menu').showModal();
-  if (b.dataset.tab) { $('#menu').close(); tab = b.dataset.tab; render(); }   // dùng data đã tải, không tải lại
+  if (b.dataset.tab) { $('#menu').close(); tab = b.dataset.tab; if (tab === 'invoice') invMode = 'list'; render(); }   // dùng data đã tải, không tải lại
   if (b.id === 'reload') { b.disabled = true; load().finally(() => b.disabled = false); }
   if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id), [...new Set([...(b.closest('table')?.querySelectorAll('[data-id]') || [])].map(x => x.dataset.id))]);
 });
