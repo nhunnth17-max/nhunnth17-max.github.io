@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nail CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--b:#0068ff;--b2:#0057d6;--bl:#e5efff;--tx:#081c36;--mu:#5a6b81;--ln:#d6dbe1;--bg:#f4f5f7;color-scheme:light}
+[hidden]{display:none!important}*{box-sizing:border-box}
+body{font:13px/1.45 "Be Vietnam Pro",system-ui,sans-serif;margin:0;background:var(--bg);color:var(--tx)}
+main{max-width:1100px;margin:auto;padding:14px 14px 80px}
+h2{font-size:18px;margin:0}h3{font-size:14px;margin:14px 0 8px}h4{font-size:13px;margin:12px 0 6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+input,select,button,textarea{font:inherit;padding:8px 10px;border:1px solid var(--ln);border-radius:8px;background:#fff;color:inherit;max-width:100%}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--b);box-shadow:0 0 0 3px #0068ff22}
+button{cursor:pointer}button.main{background:var(--b);border:0;color:#fff;font-weight:600}button.main:hover{background:var(--b2)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#q{width:100%;margin:10px 0;border-radius:99px;padding:9px 16px}
+.cards{display:flex;gap:10px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px}
+.stat{flex:0 0 140px;text-align:left;background:#fff;border:1px solid var(--ln);border-radius:12px;padding:12px;min-height:84px}
+.stat small{display:block;text-transform:uppercase;font-size:11px;color:var(--mu)}
+.stat b{display:block;font-size:22px;color:var(--b);margin-top:4px}.stat em{display:block;font-style:normal;font-size:12px;color:var(--mu)}
+.stat.on{background:var(--b);border-color:var(--b)}.stat.on small,.stat.on em,.stat.on b{color:#fff}
+.scroll{overflow-x:auto;border:1px solid var(--ln);border-radius:10px;background:#fff}
+table{width:100%;border-collapse:collapse}
+td,th{padding:9px 10px;border-bottom:1px solid #e8ebef;text-align:left;white-space:nowrap}
+th{background:var(--bl);color:var(--b);text-transform:uppercase;font-size:11px;border-bottom:2px solid var(--b)}
+td button{background:none;border:0;padding:0;text-align:left;color:var(--tx);font-weight:500}td button:hover{color:var(--b)}
+.code{font-family:ui-monospace,monospace;font-size:12px;color:var(--mu)}.ph{line-height:1.5}
+.ava{display:inline-block;width:26px;line-height:26px;border-radius:50%;background:var(--b);text-align:center;color:#fff;font-size:10px;font-weight:700;margin-right:8px}
+.card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid var(--ln)}
+.bd{display:inline-block;border:1px solid;border-radius:99px;padding:2px 10px;font-weight:600;font-size:12px}
+.bd.gold{color:#b26a00;border-color:#f5d08a;background:#fff6e5}.bd.green{color:#0a7d3e;border-color:#a8e0c0;background:#e8f8ef}
+.bd.red{color:#d93025;border-color:#f3b4af;background:#fdecea}.bd.blue{color:var(--b);border-color:#b3d1ff;background:var(--bl)}
+.teal{color:var(--b);font-weight:500}.gold{color:#b26a00;font-weight:600}.dnc{color:#d93025;font-weight:600}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;background:#fff;border-top:1px solid var(--ln);z-index:1}
+nav button{flex:1 0 76px;border:0;border-radius:0;background:none;color:var(--mu);font-size:11px;padding:8px 4px;border-top:3px solid transparent}
+nav i{display:block;font-style:normal;font-size:17px}#out{color:#d93025}
+nav button.on{color:var(--b);background:var(--bl);border-top-color:var(--b)}
+dialog{border:1px solid var(--ln);border-radius:12px;width:min(560px,88vw);background:#fff;color:inherit}
+#menu{max-height:85vh}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid button{padding:12px 4px;font-size:12px;background:var(--bl);border:0;color:var(--b)}
+#dlg{width:min(640px,100vw);height:100dvh;max-height:100dvh;padding:0;border:0;border-radius:0}
+#dlg[open]{display:flex;flex-direction:column}#dlg input,#dlg select,#dlg textarea{width:100%}
+#dlg input[type=checkbox]{width:auto;margin-right:8px}#dlg textarea{resize:vertical}
+.dh{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--ln)}.dt{flex:1}.dt b{font-size:17px}
+.dt small{display:block;color:var(--mu);margin-top:2px}
+.clk{margin-left:8px;border:1px solid #b3d1ff;color:var(--b);background:var(--bl);border-radius:99px;padding:2px 10px;font:12px ui-monospace,monospace;white-space:nowrap}
+.ava.big{width:44px;line-height:44px;font-size:15px;margin:0}
+.db{flex:1;overflow:auto;padding:4px 16px 16px}.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.full{grid-column:1/-1}
+.fl{display:block}.fl span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin:12px 0 5px}
+.tel{display:flex;align-items:center;gap:8px;min-height:38px}
+#dlg .tel input[readonly]{background:none;border:0;padding:0;width:11ch;font:14px ui-monospace,monospace;box-shadow:none}
+.ic{width:34px;height:34px;border-radius:50%;padding:0;display:inline-grid;place-items:center;background:var(--bl);border:0;color:var(--b);text-decoration:none}
+.sq{border-radius:8px;padding:0 12px;height:34px;background:none;border:1px solid var(--ln);color:inherit}
+.df{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;padding:10px 16px;border-top:1px solid var(--ln)}
+.df button:disabled{opacity:.4}.df span{color:var(--mu)}#help,#inv{border-color:var(--b);color:var(--b)}
+#dlg li{margin:5px 0;color:var(--mu)}
+@media (min-width:768px){
+main{max-width:none;margin:0 0 0 220px;padding:14px 22px 28px}
+nav{top:0;right:auto;width:220px;flex-direction:column;overflow-x:hidden;overflow-y:auto;border-top:0;border-right:1px solid var(--ln);padding:8px}
+nav::before{content:"💅 Nail CRM";font-weight:700;font-size:16px;color:var(--b);padding:10px 12px 14px}
+nav button{flex:none;display:flex;align-items:center;gap:10px;text-align:left;font-size:13px;padding:9px 12px;border:0;border-left:3px solid transparent;border-radius:8px}
+nav i{width:22px;font-size:15px;text-align:center}nav button.on{border-left-color:var(--b)}
+#apps{display:none}#switch{margin-top:auto}
+}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.kpi{text-align:left;background:#fff;border:1px solid var(--ln);border-top:3px solid var(--c);border-radius:12px;padding:10px 12px}
+.kpi small{display:block;text-transform:uppercase;font-size:11px;color:var(--mu)}.kpi b{display:block;font-size:22px;color:var(--c)}.kpi em{font-style:normal;font-size:11px;color:var(--mu)}
+.kpi.on{background:var(--bl);border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
+.kpi.blue{--c:#0068ff}.kpi.green{--c:#0a9d58}.kpi.orange{--c:#f59e0b}.kpi.purple{--c:#7c5cff}.kpi.red{--c:#e5484d}
+.tg.on{background:var(--bl);color:var(--b);border-color:var(--b)}
+.cm{display:grid;gap:12px}
+@media (min-width:1000px){.cm{grid-template-columns:minmax(0,1fr) 380px;align-items:start}.cr{position:sticky;top:12px}}
+.li{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid #e8ebef;cursor:pointer}.li>div{flex:1}
+.li.on{background:var(--bl);box-shadow:inset 3px 0 var(--b)}.li .ava{width:36px;line-height:36px;font-size:12px;margin:0}
+.pn{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.num{font:600 15px ui-monospace,monospace}.num.big{font-size:22px}
+a.ic.lg{width:44px;height:44px;background:var(--b);color:#fff}
+.seg{display:flex;gap:4px;margin:8px 0 4px}.seg i{flex:1;height:5px;border-radius:3px;background:#e1e6ee}.seg i.f{background:#0a9d58}.seg i.c{background:var(--b)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.kv small,.pn small{color:var(--mu)}.nt{padding:8px 0;border-top:1px solid #e8ebef}
+
+nav{background:var(--b);border-color:var(--b)}nav button{color:#cfe1ff}
+nav button.on{color:#fff;background:#ffffff26;border-top-color:#fff}#out{color:#fff}
+.kpi{--c:var(--b)!important}
+.bd.gold{background:var(--b);color:#fff;border-color:var(--b)}.gold{color:var(--b)}
+.seg i.f{background:var(--b)}.seg i.c{background:#b3d1ff}
+@media (min-width:768px){nav{border-right:0}nav::before{color:#fff}nav button:hover{background:#ffffff1a}nav button.on{border-left-color:#fff}}
+.iv{max-width:640px;margin:auto}.iv label{display:block;margin:10px 0}.iv label span{display:block;font-size:11px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.iv input,.iv select{width:100%}.iv h4{border-bottom:1px solid var(--ln);padding-bottom:6px;margin-top:20px;text-transform:uppercase;color:var(--mu)}
+.line{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}.line .w{grid-column:1/-1}.sum div{display:flex;justify-content:space-between;padding:3px 0}.sum .t{font-weight:700;font-size:15px;color:var(--b)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.bar button{flex:1}.hit{display:block;width:100%;text-align:left;margin-top:4px}
+#pv{width:min(760px,96vw);max-height:92vh;color:#000}.paper{font-size:12px;color:#000}.paper table{margin:12px 0}.paper th,.paper td{white-space:normal;background:none;color:#000;border-color:#ccc}
+.paper .r{text-align:right}.paper .cols{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.paper .tot{margin-left:auto;width:260px}
+#paper{display:none}@media print{body{background:#fff}body>*{display:none!important}body>#paper{display:block!important}}
+.chart{display:flex;gap:8px;align-items:flex-end;overflow-x:auto;padding-top:12px}
+.col{flex:1;min-width:36px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}.col i{width:100%;max-width:48px;background:#0068ff;border-radius:6px 6px 0 0}
+.rank{display:flex;align-items:center;gap:8px;margin-top:10px}.rank em{font-style:normal;background:#ffc53d;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;flex:none}
+.rank span{width:35%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.rank div{flex:1}.rank div i{display:block;height:8px;border-radius:4px;background:#0068ff}
+
+/* Màn chi tiết khách trên máy tính */
+@media (min-width:900px){
+#dlg{width:min(1320px,96vw);height:auto;max-height:94vh;border-radius:14px;border:1px solid var(--ln);box-shadow:0 20px 60px #081c3640}
+#dlg::backdrop{background:#081c3680}
+#dlg .db{display:flex;padding:0;min-height:0}
+#dlg .g{flex:1;min-width:0;overflow:auto;align-content:start;grid-template-columns:repeat(60,minmax(0,1fr));gap:0 0;padding:2px 10px 14px}
+#dlg .g>*{grid-column:span 15;padding:0 6px;min-width:0}
+#dlg .g>span:empty,#dlg .g>datalist,#dlg .g>input[type=hidden]{display:none}
+#dlg .g>:has([name=name]),#dlg .g>:has([name=address]){grid-column:span 18}
+#dlg .g>:has([name=city]),#dlg .g>:has([name=state]),#dlg .g>:has([name=zip]){grid-column:span 8}
+#dlg .g>:has([name=phone]),#dlg .g>:has([name=owner]),#dlg .g>:has([name=cellphone]),#dlg .g>:has([name=owner2]),#dlg .g>:has([name=cellphone2]){grid-column:span 12}
+#dlg .g>.full{grid-column:1/-1}
+#dlg .g>:has([name=result]){grid-column:span 20}#dlg .g>:has([name=note]){grid-column:span 40}
+#dlg .g>:has([name=reason]){grid-column:span 30}
+#dlg .g>:has([name=follow_up]){grid-column:span 30}
+#dlg .g>:has([name=do_not_call]){grid-column:span 30;align-self:end;margin:0;padding-bottom:9px}
+#dlg textarea[name=description],#dlg textarea[name=note]{height:84px}
+#dlg .tel{gap:4px}#dlg .tel input:not([readonly]){min-width:0;flex:1}#dlg .ic{flex:none;width:30px;height:30px}
+#dlg .hs{width:290px;flex:none;overflow:auto;border-left:1px solid var(--ln);background:var(--bg);padding:0 14px 14px}
+}
+.hs ul{list-style:none;padding:0;margin:0}.hs li{border-bottom:1px solid var(--ln);padding:6px 0;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+<p id="boot" class="card">Đang mở CRM...</p>
+<script>
+// Hiện lỗi ra màn hình thay vì để trắng
+const boot = m => { const b = document.getElementById('boot'); if (b) { b.hidden = false; b.textContent = m; } };
+addEventListener('error', e => boot('Lỗi: ' + (e.message || 'không tải được ' + (e.target.src || 'file'))), true);
+addEventListener('unhandledrejection', e => boot('Lỗi: ' + (e.reason?.message || e.reason)));
+setTimeout(() => { const b = document.getElementById('boot'); if (b && b.textContent === 'Đang mở CRM...') boot('Mở quá lâu. Kiểm tra mạng, đóng các tab CRM khác rồi bấm Ctrl + F5.'); }, 15000);
+</script>
+<form id="login" class="card row" hidden>
+  <input name="email" type="email" placeholder="Email" required>
+  <input name="password" type="password" placeholder="Mật khẩu" required>
+  <button class="main">Đăng nhập</button>
+</form>
+<div id="app" hidden>
+  <nav><button id="apps"><i>▦</i>Apps</button><button data-tab="salons"><i>👥</i>Khách hàng</button><button data-tab="campaign"><i>📣</i>Campaign</button><button data-tab="potential"><i>⭐</i>Tiềm năng</button><button data-tab="order"><i>🏆</i>Order</button><button data-tab="invoice"><i>🧾</i>Invoice</button><button data-tab="pipe"><i>🗂️</i>Pipeline</button><button data-tab="approve"><i>🕒</i>Chờ duyệt</button><button data-tab="report"><i>📊</i>Dashboard</button><button data-tab="follow"><i>🔔</i>Cảnh báo</button><button data-tab="product"><i>📦</i>Sản phẩm</button><button data-tab="daily"><i>📅</i>Daily</button><button data-tab="contest"><i>🎲</i>Contest</button><button data-tab="help"><i>📖</i>Hướng dẫn</button><button data-tab="notice"><i>📢</i>Thông báo</button><button data-tab="system"><i>⚙️</i>System</button><button data-tab="chat"><i>💬</i>Chat</button><button data-tab="dnc"><i>🚫</i>Không gọi</button><button id="reload"><i>🔄</i>Làm mới</button><button id="switch"><i>🔁</i>Chuyển tài khoản</button><button id="out"><i>🚪</i>Đăng xuất</button></nav>
+  <div id="view"></div>
+</div>
+<dialog id="dlg"></dialog>
+<dialog id="menu"><h3>Nail CRM</h3><div class="grid"><button data-tab="salons">👥<br>Khách hàng</button><button data-tab="campaign">📣<br>Campaign</button><button data-tab="potential">⭐<br>Tiềm năng</button><button data-tab="order">🏆<br>Order</button><button data-tab="invoice">🧾<br>Invoice</button><button data-tab="pipe">🗂️<br>Pipeline</button><button data-tab="approve">🕒<br>Chờ duyệt</button><button data-tab="report">📊<br>Dashboard</button><button data-tab="follow">🔔<br>Cảnh báo</button><button data-tab="product">📦<br>Sản phẩm</button><button data-tab="daily">📅<br>Daily</button><button data-tab="contest">🎲<br>Contest</button><button data-tab="help">📖<br>Hướng dẫn</button><button data-tab="notice">📢<br>Thông báo</button><button data-tab="system">⚙️<br>System</button><button data-tab="chat">💬<br>Chat</button><button data-tab="dnc">🚫<br>Không gọi</button></div></dialog>
+</main>
+<dialog id="pv"></dialog>
+<div id="paper"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// === ĐIỀN 2 GIÁ TRỊ NÀY (Supabase > Project Settings > API) ===
+const URL_ = 'https://wkzkprrqdlhhfedqstff.supabase.co';
+const KEY = 'sb_publishable_-9x9NZr-yBlZrhn0NufGPg_ErFrsryI';   // chỉ dùng anon key, KHÔNG dùng service_role
+
+const db = supabase.createClient(URL_, KEY);
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const STAGE = {new:'New',called:'Follow',ordered:'Completed'};
+const LEADS = ['Closedeal','Lost','Invalid Lead','No Response','Busy'], LEAD = {Closedeal:'green', Lost:'red', 'Invalid Lead':'red', 'No Response':'gold', Busy:'blue'};
+const ZONES = ['America/New_York','America/Chicago','America/Denver','America/Phoenix','America/Los_Angeles','America/Anchorage','Pacific/Honolulu'];
+const PRODUCTS = ['Pedicure Spa & Package','Furniture','Padset','Headspa Bed','Nail Supply','Acc & Part'];
+const POT = PRODUCTS;
+const FIELDS = [['stage','Status'],['potential','Potential'],['lead_status','Lead'],['lead_source','Nguồn'],['reason','Reason']];
+const REASONS = [
+  'R1 - Khách chưa có nhu cầu',
+  'R2 - Khách bận',
+  'R3 - Franchise không cho mua ngoài',
+  'R4 - Đổi nhu cầu',
+  'R5 - Có nhu cầu nhưng rất xa',
+  'R6 - Chỉ tham khảo',
+  'R7 - Không muốn tiếp tục',
+  'R8 - Giá chưa phù hợp',
+  'R9 - Đang so sánh',
+  'R10 - Ngại mua hàng xa',
+  'R11 - Lo ngại lắp đặt',
+  'R12 - Mới thay nội thất',
+  'R13 - Chủ đã bán tiệm',
+  'R14 - Đang build tiệm/Remodel tiệm',
+  'R15 - Chỉ dùng thương hiệu khác',
+  'R16 - Sai số',
+  'R17 - Không gặp người quyết định',
+  'R18 - Chưa có ngân sách',
+  'R19 - Đang làm với vendor khác',
+  'R20 - Khó giao tiếp'
+];
+const filter = {};
+const overdue = s => s.follow_up && new Date(s.follow_up) < new Date() && !s.do_not_call;
+const monthOf = s => s.created_at.slice(0,7);
+const values = k => [...new Set(S.map(s => s[k]).filter(Boolean))].sort();
+const initials = id => esc((M.find(m => m.user_id === id)?.name || '?').slice(0,2).toUpperCase());
+let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [], P = [], noProducts = false, pq = '', noDaily = false;
+
+const time = (d, tz) => new Date(d).toLocaleString('vi-VN', {timeZone: tz, dateStyle:'short', timeStyle:'short'});
+const money = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2});
+const phone = p => p.replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'');
+const opts = (list, sel) => list.map(([v,t]) => `<option value="${v}" ${v===sel?'selected':''}>${t}</option>`).join('');
+
+async function run(query) {
+  const {data, error} = await query;
+  if (error) { alert(error.message); throw error; }
+  return data;
+}
+async function all(table, key = 'id') {   // Supabase trả tối đa 1000 dòng mỗi lần; bảng lớn thì tải 5 trang cùng lúc
+  const page = i => run(db.from(table).select('*').order(key).range(i * 1000, i * 1000 + 999));
+  let rows = await page(0), parts = [rows];
+  for (let i = 1; parts[parts.length - 1].length === 1000; i += 5) {
+    parts = await Promise.all([0,1,2,3,4].map(n => page(i + n)));
+    rows = rows.concat(...parts);
+  }
+  return rows;
+}
+async function load() {
+  [S, C, O, M] = await Promise.all([all('salons'), all('calls'), all('orders'), all('members','user_id')]);
+  S.forEach(s => { if (s.stage === 'interested') s.stage = 'called'; });
+  me = M.find(m => m.user_id === me.user_id);
+  await loadProducts();
+  noDaily = !!(await db.from('activity').select('id').range(0, 0)).error;
+  render();
+}
+async function start() {
+  const {data:{session}} = await db.auth.getSession();
+  $('#boot')?.remove();
+  $('#login').hidden = !!session; $('#app').hidden = !session;
+  if (!session) return;
+  $('#view').textContent = 'Đang tải dữ liệu...';
+  const m = await run(db.from('members').select('*').eq('user_id', session.user.id).maybeSingle());
+  if (!m) { alert('Tài khoản chưa được thêm vào team.'); await db.auth.signOut(); return location.reload(); }
+  me = m; await load();
+}
+
+const days = d => Math.floor((Date.now() - new Date(d)) / 864e5);
+const badge = (t, c) => `<span class="bd ${c}">${esc(t)}</span>`;
+const PAGE = 50, more = {}; let moreId = 0;   // chỉ vẽ 50 dòng mỗi lần cho đỡ đơ
+function table(rows, contact) {
+  const head = ['Mã KH','Business name','Customer','Phone','State','Potential','Status','Lead status','Deadline','Ngày thêm','Sale', ...(contact ? ['Last contact'] : [])];
+  const tr = s => {
+    const f = s.follow_up && (new Date(s.follow_up) - Date.now()) / 864e5, a = days(s.created_at);
+    const st = s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
+    return `<tr><td class="code">${esc(s.code)}</td><td><button data-id="${s.id}">${esc(s.name)}</button></td>
+    <td><span class="ava">${initials(s.assigned_to)}</span>${esc(s.owner)}</td>
+    <td class="code ph">${esc(s.cellphone || s.phone)}${s.cellphone && s.cellphone !== s.phone ? `<br>${esc(s.phone)}` : ''}</td>
+    <td>${esc(ST[(s.state || '').toUpperCase()]?.[0] || s.state)}</td><td class="teal">${esc(s.potential)}</td><td>${st}</td>
+    <td>${s.lead_status ? `<span title="${esc(s.reason)}">${badge(s.lead_status, LEAD[s.lead_status] || 'gold')}</span>` : '—'}</td>
+    <td>${s.follow_up && !s.do_not_call ? (f < 0 ? badge(`Hết hạn ${Math.ceil(-f)}d`,'red') : badge(`Còn ${Math.floor(f)}d`,'gold')) : '—'}</td>
+    <td class="gold">${a}d${a >= 7 && s.stage !== 'ordered' ? ' ⚠️' : ''}</td>
+    <td>${esc(M.find(m => m.user_id === s.assigned_to)?.name)}<br><small class="code">${esc(s.campaign)}</small></td>${contact ? `<td>${callsOf(s.id)[0] ? time(callsOf(s.id)[0].created_at) : 'Chưa gọi'}</td>` : ''}</tr>`;
+  };
+  const id = ++moreId; if (rows.length > PAGE) more[id] = {rows, tr, n: PAGE};
+  return `<div class="scroll"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.slice(0, PAGE).map(tr).join('') || `<tr><td colspan="${head.length}">Chưa có dữ liệu</td></tr>`}</table></div>${rows.length > PAGE ? `<button type="button" data-more="${id}" style="width:100%;margin-top:8px">Xem thêm (đang hiện ${PAGE}/${rows.length})</button>` : ''}`;
+}
+function list() {
+  const k = q.toLowerCase();
+  const rows = S.filter(s => [s.code,s.name,s.owner,s.owner2,s.phone,s.cellphone,s.state].join(' ').toLowerCase().includes(k)
+    && FIELDS.every(([f]) => !filter[f] || (filter[f] === '_none' ? !s[f] : s[f] === filter[f]))
+    && (!filter.late || overdue(s)) && (!filter.month || monthOf(s) === filter.month));
+  $('#list').innerHTML = `<h3>Danh sách ${rows.length} khách</h3>${table(rows)}`;
+}
+const cf = {k:'active', status:'', lead:'', pot:'', q:'', view:'list', camp:'', reason:'', st:'', due:'', sort:''};
+let csel = '';
+let callMap = new Map(), callSrc;
+const callsOf = id => {   // gom cuộc gọi theo khách một lần, khỏi quét lại cho từng khách
+  if (callSrc !== C) {
+    callSrc = C; callMap = new Map();
+    [...C].sort((a,b) => b.created_at.localeCompare(a.created_at)).forEach(c => callMap.has(c.salon_id) ? callMap.get(c.salon_id).push(c) : callMap.set(c.salon_id, [c]));
+  }
+  return callMap.get(id) || [];
+};
+const stBadge = s => s.do_not_call ? badge('Không gọi','red') : badge(STAGE[s.stage] || 'New', {ordered:'green', called:'gold'}[s.stage] || 'blue');
+function campaignView(v) {
+  const camps = values('campaign');
+  if (cf.camp && !camps.includes(cf.camp)) cf.camp = '';
+  const rows = cf.camp ? S.filter(s => s.campaign === cf.camp) : S, now = Date.now(), today = new Date().toDateString();
+  const K = {
+    calls: ['Calls','blue', s => C.some(c => c.salon_id === s.id && c.user_id === me.user_id && new Date(c.created_at).toDateString() === today), 'khách đã gọi hôm nay'],
+    active: ['Active','green', s => !s.do_not_call && !['Closedeal','Lost','Invalid Lead'].includes(s.lead_status), 'excl. closed / lost / invalid'],
+    callbacks: ['Callbacks','orange', s => !s.do_not_call && s.follow_up && new Date(s.follow_up) >= now, 'upcoming'],
+    potential: ['Potential','purple', s => s.potential, 'on hand'],
+    uncalled: ['Uncalled','red', s => !s.do_not_call && !callsOf(s.id).length, 'never contacted']
+  };
+  const due = s => s.follow_up && new Date(s.follow_up) <= now ? 1 : 0, lc = s => callsOf(s.id)[0]?.created_at || '';
+  const list = () => {
+    const q = cf.q.toLowerCase();
+    return rows.filter(K[cf.k][2]).filter(s => (!cf.status || s.stage === cf.status) && (!cf.pot || s.potential === cf.pot)
+      && (cf.view !== 'table' || ((!cf.reason || s.reason === cf.reason) && (!cf.st || (s.state || '').toUpperCase() === cf.st)
+        && (!cf.due || (s.follow_up && (new Date(s.follow_up) < now ? 'late' : 'next') === cf.due))))
+      && (!cf.lead || (cf.lead === '_none' ? !s.lead_status : s.lead_status === cf.lead))
+      && [s.code, s.name, s.owner, s.phone, s.cellphone].join(' ').toLowerCase().includes(q))
+      .sort((a,b) => (cf.view === 'table' && cf.sort) ? (cf.sort === 'new' ? lc(b).localeCompare(lc(a)) : lc(a).localeCompare(lc(b))) : (due(b) - due(a)) || (!!b.potential - !!a.potential) || lc(a).localeCompare(lc(b)));
+  };
+  const fsel = (n, label, l) => `<select data-cf="${n}">${opts([['', label], ...l], cf[n])}</select>`;
+  v.innerHTML = `<div class="head"><h2>${esc(cf.camp || 'Tất cả khách')}</h2><div class="row" style="margin:0">
+      <select id="cc">${opts([['','Tất cả khách'], ...camps.map(c => [esc(c), esc(c)])], esc(cf.camp))}</select>
+      <button class="tg ${cf.view === 'list' ? 'on' : ''}" data-v="list">☰ Danh sách</button><button class="tg ${cf.view === 'table' ? 'on' : ''}" data-v="table">▦ Bảng</button></div></div>
+    <div class="kpis">${Object.entries(K).map(([k,[t,c,f,sub]]) => `<button class="kpi ${c} ${cf.k === k ? 'on' : ''}" data-k="${k}"><small>${t}</small><b>${rows.filter(f).length}</b><em>${sub}</em></button>`).join('')}</div>
+    <div class="row">${fsel('status','Tất cả Status',Object.entries(STAGE))}${cf.view === 'table' ? fsel('reason','Tất cả Reason',REASONS.map(x => [x,x])) : ''}${fsel('lead','Tất cả Lead',[['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])])}${fsel('pot','Tất cả Potential',POT.map(x => [x,x]))}
+      ${cf.view === 'table' ? fsel('st','Tất cả State',[...new Set(S.map(s => (s.state || '').toUpperCase()).filter(Boolean))].sort().map(x => [esc(x), esc(ST[x]?.[0] || x)])) + fsel('due','Tất cả hạn gọi',[['late','Quá hạn'],['next','Sắp tới']]) + fsel('sort','Last Contact',[['new','Gọi gần nhất trước'],['old','Lâu chưa gọi trước']]) : ''}
+      <input id="cq" placeholder="Tìm tên, mã KH, số điện thoại..." value="${esc(cf.q)}" style="flex:1;min-width:200px"></div><div id="cb"></div>`;
+  let shown = PAGE;
+  const draw = () => {
+    const L = list();
+    shown = Math.max(shown, L.findIndex(x => String(x.id) === csel) + 1);
+    if (!L.some(s => String(s.id) === csel)) csel = String(L[0]?.id ?? '');
+    const s = L.find(x => String(x.id) === csel), cn = s ? callsOf(s.id) : [], k = cn.length;
+    if (cf.view === 'table') {
+      $('#cb').innerHTML = `<h3>${L.length} khách</h3>${table(L, true)}`;
+      return;
+    }
+    const left = `<div class="card" style="padding:0"><div style="padding:12px"><b>Danh sách cần gọi · ${L.length} khách</b><br><small class="code">Ưu tiên: hẹn gọi lại đến hạn, Potential, lâu chưa gọi</small></div>${L.slice(0, shown).map(x => `<div class="li ${String(x.id) === csel ? 'on' : ''}" data-sel="${x.id}"><span class="ava">${esc(x.name.slice(0,2).toUpperCase())}</span><div><b>${esc(x.name)}</b><br><small class="code">${esc(x.owner)} · ${esc(ST[(x.state || '').toUpperCase()]?.[0] || x.state)}</small></div>${x.potential ? badge('Potential','blue') : ''}</div>`).join('') || '<p style="padding:12px">Không có khách.</p>'}${L.length > shown ? `<button type="button" id="cmore" style="width:100%">Xem thêm (đang hiện ${shown}/${L.length})</button>` : ''}</div>`;
+    const ph = (label, n, big) => n ? `<div class="pn"><div><small>${label}</small><div class="num ${big ? 'big' : ''}">${esc(n)}</div></div>${s.do_not_call ? '' : `<a class="ic ${big ? 'lg' : ''}" href="tel:+1${esc(n)}">📞</a>`}</div>` : '';
+    const ago = cn[0] ? (d => d ? d + ' ngày trước' : 'Hôm nay')(days(cn[0].created_at)) : 'Chưa gọi';
+    const kv = s && [['Status', stBadge(s)], ['Potential', s.potential ? badge(s.potential,'blue') : '—'], ['Lead', s.lead_status ? badge(s.lead_status, LEAD[s.lead_status] || 'gold') : '—'], ['Ngày hẹn', s.follow_up ? time(s.follow_up, s.timezone) : '—'], ['Liên hệ gần nhất', ago]];
+    const right = s ? `<div class="card"><div class="head">${s.potential ? badge(s.potential,'blue') : '<span></span>'}<span class="code">${esc(s.code)}</span></div>
+      <div style="font-size:18px;font-weight:700;margin-top:8px">${esc(s.name)}</div><small class="code">${esc(s.owner)} · ${esc(ST[(s.state || '').toUpperCase()]?.[0] || s.state)}</small>
+      ${ph(s.cellphone ? 'Cellphone' : 'Business phone', s.cellphone || s.phone, 1)}
+      <div class="seg">${Array.from({length: Math.max(6, k + 1)}, (_, i) => `<i class="${i < k ? 'f' : i === k ? 'c' : ''}"></i>`).join('')}</div><small class="code">Đã gọi ${k} lần · kế tiếp: lần ${k + 1}</small>
+      ${s.cellphone && s.cellphone !== s.phone ? ph('Business phone', s.phone) : ''}
+      <div class="kv">${kv.map(([a,b]) => `<div><small>${a}</small><div>${b}</div></div>`).join('')}</div>
+      <button class="main" id="cpn" style="width:100%">✎ Ghi chú & cập nhật kết quả</button></div>
+      <div class="card"><b>Ghi chú gần đây</b>${cn.slice(0,5).map(c => `<div class="nt">${badge(c.result,'blue')} ${esc(c.note)}<br><small class="code">${time(c.created_at)} · ${esc(M.find(m => m.user_id === c.user_id)?.name)}</small></div>`).join('') || '<p class="code">Chưa có ghi chú.</p>'}</div>` : '<div class="card">Không có khách để hiển thị.</div>';
+    $('#cb').innerHTML = `<div class="cm"><div>${left}</div><div class="cr">${right}</div></div>`;
+    document.querySelectorAll('[data-sel]').forEach(x => x.onclick = () => { csel = x.dataset.sel; draw(); });
+    if ($('#cmore')) $('#cmore').onclick = () => { shown += PAGE; draw(); };
+    if (s) $('#cpn').onclick = () => edit(s, L.map(x => String(x.id)));
+  };
+  v.querySelectorAll('[data-k]').forEach(x => x.onclick = () => { cf.k = x.dataset.k; render(); });
+  v.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { cf.view = x.dataset.v; render(); });
+  v.querySelectorAll('[data-cf]').forEach(x => x.onchange = () => { cf[x.dataset.cf] = x.value; render(); });
+  $('#cc').onchange = e => { cf.camp = e.target.value; render(); };
+  $('#cq').oninput = e => { cf.q = e.target.value; shown = PAGE; draw(); };
+  draw();
+}
+
+// ---- Sao lưu và nhập file (chỉ admin) ----
+const isAdmin = () => me.role === 'admin';
+const IMPORT = ['name','owner','phone','cellphone','cellphone2','owner2','address','city','state','zip','campaign','potential','lead_source','description','sale'];
+const cell = v => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g,'""') + '"'; };
+function download(file, rows) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(cell).join(',')).join('\r\n')], {type:'text/csv'}));
+  a.download = file; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function dump(name, rows) {
+  if (!rows.length) return alert('Chưa có dữ liệu.');
+  const keys = Object.keys(rows[0]);
+  const extra = x => [M.find(m => m.user_id === (x.assigned_to || x.user_id))?.name];
+  download(`${name}-${new Date().toISOString().slice(0,10)}.csv`, [[...keys,'sale'], ...rows.map(x => [...keys.map(k => x[k]), ...extra(x)])]);
+}
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0], sep = [',',';','\t'].sort((a,b) => first.split(b).length - first.split(a).length)[0];
+  const rows = []; let row = [], v = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) { if (c !== '"') v += c; else if (text[i+1] === '"') { v += '"'; i++; } else quoted = false; }
+    else if (c === '"' && !v) quoted = true;
+    else if (c === sep) { row.push(v); v = ''; }
+    else if (c === '\n') { row.push(v); rows.push(row); row = []; v = ''; }
+    else if (c !== '\r') v += c;
+  }
+  if (v || row.length) { row.push(v); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim()));
+}
+async function importFile(file) {
+  const [head, ...rows] = parseCSV(await file.text());
+  const keys = (head || []).map(h => h.trim().toLowerCase());
+  if (!keys.includes('name') || !keys.includes('phone')) return alert('File phải là CSV, dòng đầu có cột name và phone.');
+  if (!confirm(`Nhập ${rows.length} dòng vào CRM?`)) return;
+  const out = $('#result'), bad = []; let ok = 0;
+  for (const [i, r] of rows.entries()) {
+    const x = Object.fromEntries(IMPORT.map(k => [k, (r[keys.indexOf(k)] || '').trim().replace(/^'(?=[=+\-@])/, '') || null]));
+    const sale = x.sale; delete x.sale;
+    const who = sale ? M.find(m => m.name.toLowerCase() === sale.toLowerCase()) : me;
+    for (const k of ['phone','cellphone','cellphone2']) if (x[k]) x[k] = phone(x[k]) || null;
+    const st = Object.keys(ST).find(c => [c, ST[c][0].toUpperCase()].includes((x.state || '').toUpperCase()));
+    if (st) { x.state = st; x.timezone = ST[st][1]; }
+    let why = !x.name ? 'Thiếu tên tiệm' : !x.phone ? 'Thiếu số điện thoại' : !who ? 'Không có nhân viên tên ' + sale : '';
+    if (!why) { const {error} = await db.from('salons').insert({...x, assigned_to: who.user_id, ...(noDaily ? {} : {imported: true})}); if (error) why = error.message; }
+    if (why) bad.push([i + 2, why, ...r]); else ok++;
+    out.textContent = `Đang nhập ${i + 1}/${rows.length}...`;
+  }
+  out.textContent = `Đã nhập ${ok} khách, bỏ qua ${bad.length} dòng.`;
+  if (bad.length) download('dong-loi.csv', [['dòng','lý do',...head], ...bad]);
+  S = await all('salons');
+}
+function systemView(v) {
+  v.innerHTML = `<h2>System</h2><div class="scroll"><table><tr><th>Thành viên</th><th>Quyền</th></tr>${M.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.role)}</td></tr>`).join('')}</table></div>
+    ${isAdmin() ? `<div class="card" style="margin-top:12px"><h3>Sao lưu (tải file CSV)</h3><div class="row"><button id="x1">Khách hàng</button><button id="x2">Cuộc gọi</button><button id="x3">Đơn hàng</button><button id="x4">Sản phẩm</button></div>
+    <h3>Nhập khách từ Excel</h3><p>Trong Excel chọn Save As → <b>CSV UTF-8</b>. Số trùng sẽ bị bỏ qua. Cột sale ghi đúng tên nhân viên, để trống thì giao cho bạn.</p>
+    <div class="row"><button id="tpl">Tải file mẫu</button><input id="file" type="file" accept=".csv"></div><p id="result"></p></div>` : ''}`;
+  if (!isAdmin()) return;
+  $('#x1').onclick = () => dump('khach-hang', S);
+  $('#x2').onclick = () => dump('cuoc-goi', C);
+  $('#x3').onclick = () => dump('don-hang', O);
+  $('#x4').onclick = () => dump('san-pham', P);
+  $('#tpl').onclick = () => download('mau-nhap-khach.csv', [IMPORT]);
+  $('#file').onchange = async e => { const f = e.target.files[0]; if (!f) return; e.target.disabled = true; try { await importFile(f); } finally { e.target.disabled = false; e.target.value = ''; } };
+}
+
+// ---- Invoice ----
+const today = () => new Date().toLocaleDateString('en-CA');
+const PAY = ['Check','Zelle','Credit Card','Cash','Wire Transfer','Finance'];
+const DELIVERY = ['CUSTOMER WILL CALL','ASAP','PICK UP','PRE ORDER'];
+const store = {get: () => { try { return localStorage.getItem('company') || ''; } catch { return ''; } }, set: v => { try { localStorage.setItem('company', v); } catch {} }};
+const newLine = () => ({name:'', sku:'', qty:1, price:''});
+const newInv = (salon = null) => ({company: store.get(), date: today(), po:'', location: salon ? ST[(salon.state || '').toUpperCase()]?.[0] || '' : '', delivery:'CUSTOMER WILL CALL',
+  salon: salon?.id || null, lines:[newLine()], tax:'', deposit:'', method:'', discount:'', fee:'', warranty:'12', note:'', saved:false});
+let inv = null;
+const cents = v => Math.round((Number(v) || 0) * 100);
+function totals() {
+  const sub = inv.lines.reduce((a,l) => a + Math.round((Number(l.qty) || 0) * cents(l.price)), 0);
+  const total = sub + cents(inv.tax) + cents(inv.fee) - cents(inv.discount);
+  return [['Subtotal', sub], ['Tax', cents(inv.tax)], ['Charge Fee', cents(inv.fee)], ['Extra Discount', -cents(inv.discount)], ['Total', total], ['Deposit', cents(inv.deposit)], ['Balance Due', total - cents(inv.deposit)]];
+}
+const usd = c => (c < 0 ? '-' : '') + money(Math.abs(c) / 100);
+const sumHTML = () => totals().map(([k,c]) => `<div class="${['Total','Balance Due'].includes(k) ? 't' : ''}"><span>${k}</span><b>${usd(c)}</b></div>`).join('');
+const address = x => [x.address, x.city, [x.state, x.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+function checkInv() {
+  const t = Object.fromEntries(totals()), items = inv.lines.filter(l => l.name.trim() || l.price !== '');
+  const why = !inv.company.trim() ? 'Chưa điền tên công ty.' : !S.some(s => s.id === inv.salon) ? 'Chưa chọn khách hàng.'
+    : !items.length || items.some(l => !l.name.trim() || !(Number(l.qty) > 0) || l.price === '' || Number(l.price) < 0) ? 'Mỗi sản phẩm cần tên, số lượng và giá.'
+    : [inv.tax, inv.deposit, inv.discount, inv.fee].some(v => Number(v) < 0) ? 'Số tiền không được âm.'
+    : t.Total <= 0 ? 'Total phải lớn hơn 0.' : t['Balance Due'] < 0 ? 'Deposit lớn hơn Total.' : '';
+  if (why) { alert(why); return false; }
+  if (!inv.po) { inv.po = 'PO-' + new Date().toISOString().replace(/\D/g,'').slice(2,14); const f = $('[data-i=po]'); if (f) f.value = inv.po; }
+  return true;
+}
+function paperHTML() {
+  const x = S.find(s => s.id === inv.salon);
+  return `<div class="paper"><div class="cols"><div><h2>${esc(inv.company)}</h2></div><div class="r"><h2>INVOICE</h2>Date: ${esc(inv.date)}<br>PO Number: ${esc(inv.po)}<br>Location: ${esc(inv.location)}<br>Requested Delivery: ${esc(inv.delivery)}</div></div>
+    <p><b>Bill to</b><br>${esc(x.name)}<br>${esc(x.owner)}<br>${esc(x.cellphone || x.phone)}<br>${esc(address(x))}</p>
+    <table><tr><th>Item</th><th>SKU</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>${inv.lines.filter(l => l.name.trim()).map(l => `<tr><td>${esc(l.name)}</td><td>${esc(l.sku)}</td><td class="r">${esc(l.qty)}</td><td class="r">${usd(cents(l.price))}</td><td class="r">${usd(Math.round(Number(l.qty) * cents(l.price)))}</td></tr>`).join('')}</table>
+    <div class="tot sum">${sumHTML()}</div><p>Payment method: ${esc(inv.method || '-')}<br>Warranty: ${inv.warranty === '0' ? 'None' : esc(inv.warranty) + ' months'}${inv.note ? `<br>Note: ${esc(inv.note)}` : ''}</p></div>`;
+}
+function invoiceView(v) {
+  inv = inv || newInv();
+  const f = (k, label, attr = '') => `<label><span>${label}</span><input data-i="${k}" value="${esc(inv[k])}" ${attr}></label>`;
+  const num = (k, label) => f(k, label, 'type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"');
+  const x = S.find(s => s.id === inv.salon);
+    v.innerHTML = `<div class="iv"><h2>🧾 Tạo Invoice mới</h2><small>${esc(me.name)}</small>
+    <h4>Công ty</h4>${f('company','Tên công ty trên invoice','placeholder="Tên công ty của bạn"')}
+    <h4>Thông tin đơn hàng</h4>${f('date','Date','type="date"')}${f('po','PO Number','placeholder="Tự động"')}${f('location','Location')}<label><span>Requested Delivery</span><select data-i="delivery">${opts(DELIVERY.map(d => [d,d]), inv.delivery)}</select></label>
+    <h4>Khách hàng</h4>${x ? `<div class="card"><button type="button" id="unpick" style="float:right">✕</button><b>${esc(x.name)}</b><br>${[x.owner, x.cellphone, x.phone].filter(Boolean).map(esc).join(' | ')}<br>${esc(address(x))}</div>`
+      : `<label><span>Tìm khách hàng (Mã KH, tên, SĐT)</span><input id="ik" placeholder="Nhập để tìm..." autocomplete="off"></label><div id="hits"></div>`}
+    <h4>Sản phẩm</h4><datalist id="pl">${P.map(p => `<option value="${esc(p.name)}">${esc([p.sku, money(p.price), p.category].filter(Boolean).join(' · '))}</option>`).join('')}</datalist>
+    ${inv.lines.map((l,i) => `<div class="card line">${[['name','Tên sản phẩm hoặc SKU','list="pl" placeholder="Gõ để tìm..."','w'],['sku','SKU','',''],['qty','Số lượng','type="number" min="1" step="1"',''],['price','Đơn giá ($)','type="number" min="0" step="0.01"','']].map(([k,t,a,c]) => `<label class="${c}"><span>${t}</span><input data-l="${i}" data-k="${k}" value="${esc(l[k])}" ${a}></label>`).join('')}<label><span>&nbsp;</span><button type="button" data-rm="${i}">Xoá dòng</button></label></div>`).join('')}
+    <button type="button" id="more" style="width:100%;border-style:dashed">+ Thêm sản phẩm</button>
+    <h4>Thanh toán</h4>${num('tax','Tax ($) — tự nhập')}${num('deposit','Deposit ($)')}
+    <label><span>Phương thức thanh toán</span><select data-i="method">${opts([['','-- Không chọn --'], ...PAY.map(p => [p,p])], inv.method)}</select></label>
+    ${num('discount','Extra Discount ($)')}${num('fee','Charge Fee ($)')}
+    <label><span>Bảo hành</span><select data-i="warranty">${opts([['0','Không'],['6','6 tháng'],['12','12 tháng'],['24','24 tháng']], inv.warranty)}</select></label>
+    ${f('note','Ghi chú','placeholder="Ghi chú..."')}
+    <div class="card sum" id="sum">${sumHTML()}</div>
+    <div class="bar"><button type="button" id="rs">↻ Reset</button><button type="button" id="see">👁 Preview</button><button type="button" class="main" id="pdf">⬇ Tải PDF</button></div>
+    <div class="bar"><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : '💾 Lưu thành đơn hàng'}</button></div></div>`;
+  const again = () => invoiceView(v);
+  const changed = () => { inv.saved = false; $('#sum').innerHTML = sumHTML(); $('#keep').disabled = false; $('#keep').textContent = '💾 Lưu thành đơn hàng'; };
+  v.querySelectorAll('[data-i]').forEach(el => el.oninput = () => { inv[el.dataset.i] = el.value; if (el.dataset.i === 'company') store.set(el.value); changed(); });
+  v.querySelectorAll('[data-l]').forEach(el => el.oninput = () => { inv.lines[el.dataset.l][el.dataset.k] = el.value; changed(); });
+  v.querySelectorAll('[data-k=name]').forEach(el => el.onchange = () => {   // chọn từ danh mục thì tự điền SKU và giá
+    const k = el.value.trim().toLowerCase(), p = P.find(p => p.name.toLowerCase() === k || (p.sku || '').toLowerCase() === k);
+    if (p) { Object.assign(inv.lines[el.dataset.l], {name: p.name, sku: p.sku || '', price: String(p.price)}); changed(); again(); }
+  });
+  v.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { inv.lines.splice(b.dataset.rm, 1); if (!inv.lines.length) inv.lines.push(newLine()); inv.saved = false; again(); });
+  $('#more').onclick = () => { inv.lines.push(newLine()); again(); };
+  if (x) $('#unpick').onclick = () => { inv.salon = null; inv.saved = false; again(); };
+  else $('#ik').oninput = e => {
+    const k = e.target.value.trim().toLowerCase();
+    const hits = k ? S.filter(s => [s.code,s.name,s.owner,s.phone,s.cellphone].join(' ').toLowerCase().includes(k)).slice(0,8) : [];
+    $('#hits').innerHTML = hits.map(s => `<button type="button" class="hit" data-pick="${s.id}">${esc(s.code)} · ${esc(s.name)} · ${esc(s.phone)}</button>`).join('');
+    $('#hits').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { const s = S.find(y => y.id == b.dataset.pick); inv.salon = s.id; inv.location = ST[(s.state || '').toUpperCase()]?.[0] || inv.location; inv.saved = false; again(); });
+  };
+  $('#rs').onclick = () => { if (confirm('Xoá hết thông tin đang nhập?')) { inv = newInv(); again(); } };
+  const print = () => { const old = document.title; $('#paper').innerHTML = paperHTML(); document.title = inv.po; window.print(); document.title = old; };
+  $('#see').onclick = () => {
+    if (!checkInv()) return;
+    $('#pv').innerHTML = `${paperHTML()}<div class="bar"><button type="button" id="pc">Đóng</button><button type="button" class="main" id="pp">⬇ Tải PDF</button></div>`;
+    $('#pv').showModal(); $('#pc').onclick = () => $('#pv').close(); $('#pp').onclick = print;
+  };
+  $('#pdf').onclick = () => { if (checkInv()) print(); };
+  $('#keep').onclick = async e => {
+    if (!checkInv() || !confirm('Lưu invoice này thành đơn hàng và tính vào doanh số?')) return;
+    e.target.disabled = true;
+    const items = inv.lines.filter(l => l.name.trim()).map(l => `${l.name} x${l.qty}`).join(', ');
+    try {
+      await run(db.from('orders').insert({salon_id: inv.salon, amount: Object.fromEntries(totals()).Total / 100, note: `${inv.po}: ${items}`}));
+    } catch { e.target.disabled = false; return; }
+    inv.saved = true; e.target.textContent = '✓ Đã lưu thành đơn';
+    await run(db.from('salons').update({stage:'ordered', lead_status:'Closedeal'}).eq('id', inv.salon));
+    O = await all('orders'); S = await all('salons');
+  };
+}
+
+// ---- Sản phẩm ----
+async function loadProducts() {   // chưa chạy san-pham.sql thì các mục khác vẫn dùng được
+  const {data, error} = await db.from('products').select('*').order('name').range(0, 999);
+  noProducts = !!error; P = data || [];
+}
+function productView(v) {
+  if (noProducts) { v.innerHTML = '<h2>Sản phẩm</h2><div class="card">Chưa có bảng sản phẩm. Admin chạy file san-pham.sql trong Supabase rồi tải lại trang.</div>'; return; }
+  const cats = [...new Set([...PRODUCTS, ...P.map(p => p.category)])];
+  const open = new Set();
+  v.innerHTML = `<div class="head"><h2>Sản phẩm</h2>${isAdmin() ? '<button class="main" id="padd">+ Thêm sản phẩm</button>' : ''}</div>
+    <input id="pq" placeholder="Tìm theo tên, SKU..." value="${esc(pq)}" style="width:100%;margin:10px 0"><div id="plist"></div>`;
+  const draw = () => {
+    const k = pq.trim().toLowerCase();
+    $('#plist').innerHTML = cats.map(c => {
+      const r = P.filter(p => p.category === c && [p.name, p.sku].join(' ').toLowerCase().includes(k));
+      if (k && !r.length) return '';
+      return `<details class="card" data-c="${esc(c)}" ${k || open.has(c) ? 'open' : ''}><summary><b>${esc(c)}</b> (${r.length})</summary>
+        <div class="scroll" style="margin-top:8px"><table><tr><th>Tên sản phẩm</th><th>SKU</th><th>Giá</th>${isAdmin() ? '<th></th>' : ''}</tr>${r.map(p => `<tr><td>${esc(p.name)}</td><td class="code">${esc(p.sku)}</td><td>${money(p.price)}</td>${isAdmin() ? `<td><button type="button" data-pe="${p.id}">✎ Sửa</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="4">Chưa có sản phẩm</td></tr>'}</table></div>
+        ${isAdmin() ? `<button type="button" data-pa="${esc(c)}" style="margin-top:8px">+ Thêm vào nhóm này</button>` : ''}</details>`;
+    }).join('') || '<p>Không tìm thấy.</p>';
+    $('#plist').querySelectorAll('details').forEach(d => d.ontoggle = () => d.open ? open.add(d.dataset.c) : open.delete(d.dataset.c));
+    $('#plist').querySelectorAll('[data-pe]').forEach(b => b.onclick = () => editProduct(P.find(p => p.id == b.dataset.pe)));
+    $('#plist').querySelectorAll('[data-pa]').forEach(b => b.onclick = () => editProduct({category: b.dataset.pa}));
+  };
+  draw();
+  $('#pq').oninput = e => { pq = e.target.value; draw(); };
+  if (isAdmin()) $('#padd').onclick = () => editProduct();
+}
+function editProduct(p = {}) {
+  const d = $('#pv'), cats = [...new Set([...PRODUCTS, ...P.map(x => x.category)])];
+  d.innerHTML = `<form id="pf" class="iv"><h3>${p.id ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}</h3>
+    <label><span>Nhóm (Potential)</span><select name="category">${opts(cats.map(c => [esc(c), esc(c)]), esc(p.category || cats[0]))}</select></label>
+    <label><span>Tên sản phẩm</span><input name="name" required value="${esc(p.name)}"></label>
+    <label><span>SKU</span><input name="sku" value="${esc(p.sku)}"></label>
+    <label><span>Giá ($)</span><input name="price" type="number" min="0" step="0.01" required value="${esc(p.price)}"></label>
+    <div class="bar">${p.id ? '<button type="button" id="pdel">Xoá</button>' : ''}<button type="button" id="pno">Đóng</button><button class="main">Lưu</button></div></form>`;
+  const done = async () => { d.close(); await loadProducts(); render(); };
+  $('#pno').onclick = () => d.close();
+  if (p.id) $('#pdel').onclick = async () => { if (confirm('Xoá sản phẩm này?')) { await run(db.from('products').delete().eq('id', p.id)); await done(); } };
+  $('#pf').onsubmit = async e => {
+    e.preventDefault();
+    const x = Object.fromEntries(new FormData(e.target));
+    x.name = x.name.trim(); x.sku = x.sku.trim() || null;
+    if (!x.name) return alert('Chưa điền tên sản phẩm.');
+    e.submitter.disabled = true;
+    try { await run(p.id ? db.from('products').update(x).eq('id', p.id) : db.from('products').insert(x)); await done(); }
+    finally { e.submitter.disabled = false; }
+  };
+  d.showModal();
+}
+
+// ---- Chờ duyệt ----
+function approveView(v) {
+  if (noDaily) { v.innerHTML = '<h2>Chờ duyệt</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.</div>'; return; }
+  const r = O.filter(o => !o.approved_at && (isAdmin() || o.user_id === me.user_id));
+  v.innerHTML = `<h2>Chờ duyệt (${r.length})</h2><div class="scroll"><table><tr><th>Ngày</th><th>Tiệm</th><th>Số tiền</th><th>Sản phẩm</th><th>Nhân viên</th>${isAdmin() ? '<th></th>' : ''}</tr>${r.reverse().map(o => `<tr><td>${time(o.created_at)}</td><td>${esc(S.find(x => x.id === o.salon_id)?.name)}</td><td>${money(o.amount)}</td><td>${esc(o.note)}</td><td>${esc(M.find(m => m.user_id === o.user_id)?.name)}</td>${isAdmin() ? `<td><button class="main" data-ok="${o.id}">Duyệt</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6">Không có đơn chờ duyệt</td></tr>'}</table></div>`;
+  v.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
+    if (!confirm('Duyệt đơn này?')) return;
+    b.disabled = true;
+    await run(db.from('orders').update({approved_at: new Date().toISOString(), approved_by: me.user_id}).eq('id', b.dataset.ok));
+    await load();
+  });
+}
+
+// ---- Daily Report ----
+let dr = null;
+const US_ZONES = [['America/New_York','Eastern'],['America/Chicago','Central'],['America/Denver','Mountain'],['America/Phoenix','Arizona'],['America/Los_Angeles','Pacific'],['America/Anchorage','Alaska'],['Pacific/Honolulu','Hawaii']];
+const addDay = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+function usParts(t, tz) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', hourCycle:'h23'}).formatToParts(new Date(t)).map(x => [x.type, x.value]));
+  return {day: `${p.year}-${p.month}-${p.day}`, hour: +p.hour};
+}
+function dailyStats(A) {
+  const inRange = t => {
+    if (!t) return false;
+    const {day, hour} = usParts(t, dr.tz);
+    if (day < dr.from || day > dr.to) return false;
+    if (dr.h1 === '' && dr.h2 === '') return true;
+    const a = +(dr.h1 || 0), b = dr.h2 === '' ? 24 : +dr.h2;
+    return a < b ? hour >= a && hour < b : hour >= a || hour < b;   // qua nửa đêm
+  };
+  const work = A.filter(a => inRange(a.created_at));
+  const days = []; for (let d = dr.from; d <= dr.to; d = addDay(d, 1)) days.push(d);
+  const perDay = days.map(d => [d, new Set(work.filter(a => usParts(a.created_at, dr.tz).day === d).map(a => a.salon_id)).size]);
+  const rows = M.filter(m => isAdmin() || m.user_id === me.user_id).map(m => {
+    const data = new Set(work.filter(a => a.user_id === m.user_id).map(a => a.salon_id));
+    const fresh = S.filter(x => x.potential && x.potential_by === m.user_id && inRange(x.potential_at));
+    const old = S.filter(x => x.potential && data.has(x.id) && (!x.potential_at || usParts(x.potential_at, dr.tz).day < dr.from));
+    const by = {}; fresh.forEach(x => by[x.potential] = (by[x.potential] || 0) + 1);
+    return {name: m.name, data: data.size, fresh: fresh.length, by: Object.entries(by).map(([k, n]) => `${k.slice(0, 3)}:${n}`).join(' | '), old: old.length,
+      quotes: O.filter(o => o.user_id === m.user_id && inRange(o.created_at)).length,
+      invoices: O.filter(o => o.user_id === m.user_id && inRange(o.approved_at)).length};
+  }).filter(r => r.data || r.fresh || r.quotes || r.invoices).sort((a, b) => b.data - a.data);
+  const total = k => rows.reduce((n, r) => n + r[k], 0);
+  return {rows, perDay, data: new Set(work.map(a => a.salon_id)).size, fresh: total('fresh'), old: total('old'), quotes: total('quotes'), invoices: total('invoices')};
+}
+async function dailyView(v) {
+  if (noDaily) { v.innerHTML = '<h2>Daily Report</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.</div>'; return; }
+  if (!dr) { const tz = 'America/Chicago', to = usParts(Date.now(), tz).day; dr = {tz, to, from: addDay(to, -6), h1: '', h2: ''}; }
+  const hours = [['', '--'], ...Array.from({length: 24}, (_, h) => [String(h), h + 'h'])];
+  v.innerHTML = `<h2>Daily Report</h2><form id="drf" class="card">
+    <div class="row"><label>Từ ngày <input type="date" name="from" required value="${dr.from}"></label><label>đến <input type="date" name="to" required value="${dr.to}"></label></div>
+    <div class="row"><label>Giờ Mỹ <select name="h1">${opts(hours, dr.h1)}</select></label><label>→ <select name="h2">${opts(hours, dr.h2)}</select></label><select name="tz">${opts(US_ZONES, dr.tz)}</select>
+    <button type="button" id="allday">Cả ngày</button><button class="main">🔍 Lọc</button></div></form><div id="drout">Đang tải...</div>`;
+  const form = $('#drf'), read = () => Object.assign(dr, Object.fromEntries(new FormData(form)));
+  form.onsubmit = e => {
+    e.preventDefault();
+    const x = Object.fromEntries(new FormData(form));
+    if (x.from > x.to) return alert('"Từ ngày" phải trước ngày "đến".');
+    if (addDay(x.from, 92) < x.to) return alert('Chọn tối đa 3 tháng mỗi lần.');
+    read(); dailyView(v);
+  };
+  $('#allday').onclick = () => { form.h1.value = form.h2.value = ''; form.requestSubmit(); };
+  const out = $('#drout');
+  let A = [], n = 0, part;
+  do {   // chỉ tải nhật ký trong khoảng đang xem
+    part = await run(db.from('activity').select('*').gte('created_at', addDay(dr.from, -1)).lt('created_at', addDay(dr.to, 2)).order('id').range(n, n + 999));
+    A = A.concat(part); n += 1000;
+  } while (part.length === 1000);
+  if (!out.isConnected) return;   // đã chuyển mục khác
+  const t = dailyStats(A), max = Math.max(1, ...t.perDay.map(d => d[1])), top = Math.max(1, ...t.rows.map(r => r.data));
+  const kpi = (c, label, num, sub) => `<div class="kpi ${c}"><small>${label}</small><b>${num}</b><em>${sub}</em></div>`;
+  out.innerHTML = `<div class="kpis">${kpi('blue','Data',t.data,'khách khác nhau')}${kpi('green','Pot.New',t.fresh,'mới trong kỳ')}${kpi('orange','Pot.Old',t.old,'cũ có thao tác')}${kpi('purple','Quotes',t.quotes,'đơn đã tạo')}${kpi('red','Invoices',t.invoices,'đơn đã duyệt')}</div>
+    <div class="card"><b>Data thao tác theo ngày</b><div class="chart">${t.perDay.map(([d, c]) => `<div class="col"><span>${c}</span><i style="height:${c / max * 150}px"></i><small>${d.slice(8)}/${d.slice(5, 7)}</small></div>`).join('')}</div></div>
+    <div class="card"><b>Top sale theo data</b>${t.rows.map((r, i) => `<div class="rank"><em>${i + 1}</em><span>${esc(r.name)}</span><div><i style="width:${r.data / top * 100}%"></i></div><b>${r.data}</b></div>`).join('') || '<p>Chưa có thao tác trong khoảng này.</p>'}</div>
+    <div class="scroll"><table><tr><th>Sale</th><th>Data thao tác</th><th>Pot.New</th><th>Pot.Old</th><th>Báo giá</th><th>Invoice</th></tr>${t.rows.map(r => `<tr><td><b>${esc(r.name)}</b></td><td>${r.data}</td><td>${r.fresh}${r.by ? `<br><small>${esc(r.by)}</small>` : ''}</td><td>${r.old}</td><td>${r.quotes}</td><td>${r.invoices}</td></tr>`).join('') || '<tr><td colspan="6">Chưa có dữ liệu</td></tr>'}</table></div>
+    <p><small>Pot.New = khách mới thành Potential trong kỳ · Pot.Old = khách Potential từ trước, có thao tác trong kỳ · Báo giá = đơn đã tạo · Invoice = đơn đã duyệt · Data = số khách khác nhau (một khách làm nhiều ngày chỉ tính 1 ở tổng).</small></p>`;
+}
+
+function render() {
+  const v = $('#view'), active = S.filter(s => !s.do_not_call);
+  document.querySelectorAll('nav [data-tab]').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
+  if (tab === 'salons') {
+    const card = (label, n, attr, on, sub = '') => `<button class="stat ${on ? 'on' : ''}" ${attr}><small>${esc(label)}</small><b>${n}</b>${sub ? `<em>${sub}</em>` : ''}</button>`;
+    const sel = (f, label, list) => `<select data-f="${f}">${opts([['',`Tất cả ${label}`], ...list], filter[f] || '')}</select>`;
+    v.innerHTML = `<div class="head"><h2>Khách hàng</h2><button class="main" id="add">+ Thêm khách</button></div>
+      <input id="q" placeholder="Tìm tên, SĐT, mã KH, công ty..." value="${esc(q)}">
+      <div class="cards">${card('Tổng data', S.length, 'data-stage=""', !filter.stage && !filter.potential && !filter.lead_status, 'được giao')}${card('Closedeal', S.filter(s => s.lead_status === 'Closedeal').length, 'data-lead="Closedeal"', filter.lead_status === 'Closedeal', 'đã chốt')}
+        ${[...new Set([...PRODUCTS, ...values('potential')])].map(b => card(b, S.filter(s => s.potential === b).length, `data-brand="${esc(b)}"`, filter.potential === b)).join('')}</div>
+      <div class="row">${FIELDS.map(([f,label]) => sel(f, label, f === 'stage' ? Object.entries(STAGE) : f === 'potential' ? POT.map(x => [x,x]) : f === 'lead_status' ? [['_none','Chưa có Lead Status'], ...LEADS.map(x => [x,x])] : f === 'reason' ? REASONS.map(x => [x,x]) : values(f).map(x => [esc(x),esc(x)]))).join('')}
+        ${sel('late', 'hạn gọi', [['1','Chỉ quá hạn']])}${sel('month', 'tháng', [...new Set(S.map(monthOf))].sort().map(x => [x,x]))}</div>
+      <div id="list"></div>`;
+    list();
+    $('#q').oninput = e => { q = e.target.value; list(); };
+    $('#add').onclick = () => edit();
+    v.querySelectorAll('[data-f]').forEach(x => x.onchange = () => { filter[x.dataset.f] = x.value; render(); });
+    v.querySelectorAll('[data-stage]').forEach(x => x.onclick = () => { filter.stage = x.dataset.stage; if (!x.dataset.stage) filter.potential = filter.lead_status = ''; render(); });
+    v.querySelectorAll('[data-lead]').forEach(x => x.onclick = () => { filter.lead_status = filter.lead_status === x.dataset.lead ? '' : x.dataset.lead; render(); });
+    v.querySelectorAll('[data-brand]').forEach(x => x.onclick = () => { filter.potential = filter.potential === x.dataset.brand ? '' : x.dataset.brand; render(); });
+  } else if (tab === 'campaign') {
+    campaignView(v);
+  } else if (tab === 'potential') {
+    v.innerHTML = POT.map(p => { const r = active.filter(s => s.potential === p); return `<h3>${p} (${r.length})</h3>${table(r)}`; }).join('');
+  } else if (tab === 'product') {
+    productView(v);
+  } else if (tab === 'invoice') {
+    invoiceView(v);
+  } else if (tab === 'order') {
+    v.innerHTML = `<h2>Order</h2><div class="scroll"><table><tr><th>Ngày</th><th>Tiệm</th><th>Số tiền</th><th>Sản phẩm</th><th>Nhân viên</th></tr>${[...O].reverse().map(o => {
+      const x = S.find(s => s.id === o.salon_id);
+      return `<tr><td>${time(o.created_at)}</td><td><button data-id="${o.salon_id}">${esc(x?.name)}</button></td><td>${money(o.amount)}</td><td>${esc(o.note)}</td><td>${esc(M.find(m => m.user_id === o.user_id)?.name)}</td></tr>`;
+    }).join('') || '<tr><td colspan="5">Chưa có đơn</td></tr>'}</table></div>`;
+  } else if (tab === 'follow') {
+    v.innerHTML = table(active.filter(s => s.follow_up).sort((a,b) => new Date(a.follow_up) - new Date(b.follow_up)));
+  } else if (tab === 'pipe') {
+    v.innerHTML = Object.entries(STAGE).map(([k,t]) => { const r = active.filter(s => s.stage === k); return `<h3>${t} (${r.length})</h3>${table(r)}`; }).join('');
+  } else if (tab === 'daily') {
+    dailyView(v);
+  } else if (tab === 'approve') {
+    approveView(v);
+  } else if (['contest','notice','chat'].includes(tab)) {
+    v.innerHTML = `<h2>${document.querySelector(`nav [data-tab=${tab}]`).lastChild.textContent}</h2><div class="card">Mục này chưa làm.</div>`;
+  } else if (tab === 'help') {
+    v.innerHTML = `<h2>Hướng dẫn</h2><div class="card"><p>Thêm khách: vào Khách hàng, bấm "+ Thêm khách".</p><p>Sửa khách, ghi cuộc gọi, thêm đơn: bấm vào tên tiệm.</p><p>Tạo invoice: mở khách rồi bấm "Tạo Invoice", hoặc vào tab Invoice.</p><p>Lịch gọi lại: điền ô "Gọi lại", xem ở Cảnh báo.</p><p>Khách yêu cầu ngừng liên hệ: tick "Không gọi".</p></div>`;
+  } else if (tab === 'system') {
+    systemView(v);
+  } else if (tab === 'dnc') {
+    v.innerHTML = table(S.filter(s => s.do_not_call));
+  } else {
+    const month = new Date().toISOString().slice(0,7);
+    v.innerHTML = `<h3>Tháng ${month} (theo giờ UTC)</h3><div class="scroll"><table><tr><th>Nhân viên</th><th>Cuộc gọi</th><th>Đơn</th><th>Doanh số</th></tr>${M.filter(m => isAdmin() || m.user_id === me.user_id).map(m => {
+      const mine = x => x.user_id === m.user_id && x.created_at.startsWith(month), o = O.filter(mine);
+      return `<tr><td>${esc(m.name)}</td><td>${C.filter(mine).length}</td><td>${o.length}</td><td>${money(o.reduce((a,x) => a + Number(x.amount), 0))}</td></tr>`;
+    }).join('')}</table></div>`;
+  }
+}
+
+const TZ = {N:'America/New_York',C:'America/Chicago',D:'America/Denver',L:'America/Los_Angeles',P:'America/Phoenix',A:'America/Anchorage',H:'Pacific/Honolulu'};
+const ST = Object.fromEntries('AL|Alabama|C,AK|Alaska|A,AZ|Arizona|P,AR|Arkansas|C,CA|California|L,CO|Colorado|D,CT|Connecticut|N,DE|Delaware|N,DC|District of Columbia|N,FL|Florida|N,GA|Georgia|N,HI|Hawaii|H,ID|Idaho|D,IL|Illinois|C,IN|Indiana|N,IA|Iowa|C,KS|Kansas|C,KY|Kentucky|N,LA|Louisiana|C,ME|Maine|N,MD|Maryland|N,MA|Massachusetts|N,MI|Michigan|N,MN|Minnesota|C,MS|Mississippi|C,MO|Missouri|C,MT|Montana|D,NE|Nebraska|C,NV|Nevada|L,NH|New Hampshire|N,NJ|New Jersey|N,NM|New Mexico|D,NY|New York|N,NC|North Carolina|N,ND|North Dakota|C,OH|Ohio|N,OK|Oklahoma|C,OR|Oregon|L,PA|Pennsylvania|N,RI|Rhode Island|N,SC|South Carolina|N,SD|South Dakota|C,TN|Tennessee|C,TX|Texas|C,UT|Utah|D,VT|Vermont|N,VA|Virginia|N,WA|Washington|L,WV|West Virginia|N,WI|Wisconsin|C,WY|Wyoming|D'.split(',').map(x => { const [c, n, z] = x.split('|'); return [c, [n, TZ[z]]]; }));
+const CALLS = ['Không bắt máy','Đã nói chuyện','Hẹn gọi lại','Quan tâm','Từ chối'];
+
+function edit(s = {}, ids = []) {
+  const d = $('#dlg'), who = id => esc(M.find(m => m.user_id === id)?.name);
+  const history = [
+    ...C.filter(c => c.salon_id === s.id).map(c => [c.created_at, `${who(c.user_id)}: ${esc(c.result)} ${esc(c.note)}`]),
+    ...O.filter(o => o.salon_id === s.id).map(o => [o.created_at, `${who(o.user_id)}: đơn ${money(o.amount)} ${esc(o.note)}`])
+  ].sort((a,b) => b[0].localeCompare(a[0]));
+  const i = ids.indexOf(String(s.id)), go = n => edit(S.find(x => x.id == ids[i + n]), ids);
+  const fl = (label, html, cls = '') => `<label class="fl ${cls}"><span>${label}</span>${html}</label>`;
+  const inp = (n, label, ph = '') => fl(label, `<input name="${n}" placeholder="${ph}" value="${esc(s[n])}" ${n === 'name' ? 'required' : ''} ${n === 'brand' ? 'list="products"' : ''}>`);
+  const tel = (n, label) => fl(label, `<div class="tel"><input name="${n}" ${n === 'phone' ? 'required' : ''} value="${esc(s[n])}" ${s[n] ? 'readonly' : ''}>${s[n] && !s.do_not_call ? `<a class="ic call" href="tel:+1${esc(s[n])}">📞</a>` : ''}<button type="button" class="ic" data-edit>✎</button></div>`);
+  const sel = (n, label, list, v, cls) => fl(label, `<select name="${n}">${opts(list, v)}</select>`, cls);
+  const zone = s.timezone || ST[(s.state || '').toUpperCase()]?.[1] || 'America/Chicago';
+  d.innerHTML = `<header class="dh"><span class="ava big">${initials(s.assigned_to || me.user_id)}</span>
+    <div class="dt"><b>${esc(s.owner || s.name || 'Khách mới')}</b><span class="clk" id="clk"></span><small>${esc(s.name)}${s.code ? ' · ' + esc(s.code) : ''}</small></div>
+    <button type="button" class="sq" data-close>✕</button></header>
+  <div class="db"><form id="f" class="g">
+    ${inp('name','Business name')}${inp('address','Address')}
+    ${inp('city','City','Thành phố')}${sel('state','State',[['','Chọn bang'], ...Object.entries(ST).map(([c,[n]]) => [c,n])], (s.state || '').toUpperCase())}
+    ${inp('zip','Zipcode')}<span></span>
+    ${tel('phone','Business phone')}${inp('owner','Customer name')}
+    ${tel('cellphone','Cellphone')}${inp('owner2','Customer name 2')}
+    ${tel('cellphone2','Cellphone 2')}<span></span>
+    ${fl('Description', `<textarea name="description" rows="5">${esc(s.description)}</textarea>`, 'full')}
+    ${s.id && !s.do_not_call ? sel('result','Kết quả cuộc gọi',[['','-- Chọn --'], ...CALLS.map(x => [x,x])],'','full') + fl('Ghi chú', '<textarea name="note" rows="3" placeholder="Nội dung cuộc gọi..."></textarea>', 'full') : ''}
+    ${sel('stage','Status',Object.entries(STAGE), s.stage || 'new')}${sel('potential','Potential',[['','—'], ...POT.map(x => [x,x])], s.potential || '')}
+    ${sel('lead_status','Lead status',[['','Chưa có Lead Status'], ...LEADS.map(x => [x,x])], s.lead_status || '')}${inp('lead_source','Lead (nguồn)')}
+    ${inp('campaign','Campaign')}
+    ${sel('reason','Reason (lý do)',[['','—'], ...REASONS.map(x => [x,x])], s.reason || '')}
+    ${sel('assigned_to','Giao cho',M.filter(m => isAdmin() || m.user_id === me.user_id).map(m => [m.user_id, esc(m.name)]), s.assigned_to || me.user_id)}${fl('Gọi lại (giờ máy bạn)','<input name="follow_up" type="datetime-local">')}
+    <label class="full" style="margin-top:14px"><input type="checkbox" name="do_not_call" ${s.do_not_call ? 'checked' : ''}> Không gọi</label>
+    <input type="hidden" name="timezone" value="${esc(zone)}">
+    <datalist id="products">${PRODUCTS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
+  </form>
+  ${s.id ? `<aside class="hs"><h4>Lịch sử liên hệ (${history.length})</h4><ul>${history.map(h => `<li>${h[1]}<br><small>${time(h[0])}</small></li>`).join('') || '<li>Chưa có liên hệ.</li>'}</ul></aside>` : ''}</div>
+  <footer class="df">${i >= 0 && ids.length > 1 ? `<button type="button" id="prev" ${i < 1 ? 'disabled' : ''}>◀</button><span>${i + 1}/${ids.length}</span><button type="button" id="next" ${i >= ids.length - 1 ? 'disabled' : ''}>▶</button>` : ''}
+    <button type="button" data-close>Đóng</button>${s.id ? '<button type="button" id="help">🎧 Nhờ hỗ trợ</button><button type="button" id="inv">🧾 Tạo Invoice</button>' : ''}<button class="main" form="f">💾 Lưu</button></footer>`;
+
+  const f = d.querySelector('#f'), input = f.follow_up;
+  if (s.follow_up) { const t = new Date(s.follow_up); input.value = new Date(t - t.getTimezoneOffset()*60000).toISOString().slice(0,16); }
+  const tick = () => { const st = ST[f.state.value]; d.querySelector('#clk').textContent = `🕒 ${new Date().toLocaleTimeString('en-US', {timeZone: f.timezone.value, hour: '2-digit', minute: '2-digit'})}${st ? ` (${st[0]})` : ''}`; };
+  f.state.onchange = () => { const z = ST[f.state.value]?.[1]; if (z) f.timezone.value = z; tick(); };
+  tick(); clearInterval(d.t); d.t = setInterval(tick, 30000); d.onclose = () => clearInterval(d.t);
+  d.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const x = b.parentNode.querySelector('input'); x.readOnly = false; x.focus(); });
+  d.querySelectorAll('[data-close]').forEach(b => b.onclick = () => d.close());
+  if (i >= 0) { d.querySelector('#prev') && (d.querySelector('#prev').onclick = () => go(-1)); d.querySelector('#next') && (d.querySelector('#next').onclick = () => go(1)); }
+  if (s.id) {
+    d.querySelector('#inv').onclick = () => { inv = newInv(s); d.close(); tab = 'invoice'; load(); };
+    d.querySelector('#help').onclick = async () => {
+      const n = prompt('Bạn cần hỗ trợ gì?'); if (!n) return;
+      await run(db.from('calls').insert({salon_id: s.id, result: 'Nhờ hỗ trợ', note: n})); d.close(); await load();
+    };
+  }
+  const on = (id, fn) => { const form = d.querySelector(id); if (form) form.onsubmit = async e => {
+    e.preventDefault();
+    const btn = e.submitter; btn.disabled = true;
+    try { await fn(Object.fromEntries(new FormData(form))); d.close(); await load(); }
+    finally { btn.disabled = false; }
+  }; };
+  on('#f', async ({result, note, ...v}) => {
+    for (const k of ['potential','lead_status','lead_source','reason','campaign','address','city','zip','owner2','cellphone','cellphone2','description']) v[k] = v[k]?.trim() || null;
+    for (const k of ['phone','cellphone','cellphone2']) if (v[k]) v[k] = phone(v[k]);
+    const row = {...v, do_not_call: !!v.do_not_call, follow_up: v.follow_up ? new Date(v.follow_up).toISOString() : null};
+    if (result && row.stage === 'new') row.stage = 'called';
+    if (s.id) {
+      const saved = await run(db.from('salons').update(row).eq('id', s.id).select('id'));
+      if (!saved?.length) { alert('Chưa lưu được: khách này không còn được giao cho bạn.'); return; }
+    } else await run(db.from('salons').insert(row));
+    if (result) await run(db.from('calls').insert({result, note, salon_id: s.id}));
+  });
+  if (!d.open) d.showModal();
+}
+
+$('#login').onsubmit = async e => {
+  e.preventDefault();
+  const {error} = await db.auth.signInWithPassword(Object.fromEntries(new FormData(e.target)));
+  if (error) return alert(error.message);
+  start();
+};
+$('#out').onclick = $('#switch').onclick = async () => { await db.auth.signOut({scope:'local'}); location.reload(); };
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.more) {
+    const m = more[b.dataset.more];
+    b.previousElementSibling.querySelector('tbody').insertAdjacentHTML('beforeend', m.rows.slice(m.n, m.n += PAGE).map(m.tr).join(''));
+    if (m.n >= m.rows.length) b.remove(); else b.textContent = `Xem thêm (đang hiện ${m.n}/${m.rows.length})`;
+  }
+  if (b.id === 'apps') $('#menu').showModal();
+  if (b.dataset.tab) { $('#menu').close(); tab = b.dataset.tab; render(); }   // dùng data đã tải, không tải lại
+  if (b.id === 'reload') { b.disabled = true; load().finally(() => b.disabled = false); }
+  if (b.dataset.id) edit(S.find(s => s.id == b.dataset.id), [...new Set([...(b.closest('table')?.querySelectorAll('[data-id]') || [])].map(x => x.dataset.id))]);
+});
+start();
+</script>
+</body>
+</html>
