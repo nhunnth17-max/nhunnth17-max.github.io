@@ -93,6 +93,11 @@ nav button.on{color:#fff;background:#ffffff26;border-top-color:#fff}#out{color:#
 .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.bar button{flex:1}.hit{display:block;width:100%;text-align:left;margin-top:4px}
 #pv{width:min(760px,96vw);max-height:92vh;color:#000}.paper{font-size:12px;color:#000}.paper table{margin:12px 0}.paper th,.paper td{white-space:normal;background:none;color:#000;border-color:#ccc}
 .paper .r{text-align:right}.paper .cols{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.paper .tot{margin-left:auto;width:260px}
+.ivw{max-width:1320px;margin:auto;display:grid;gap:16px}.ivw .iv{max-width:none;margin:0}
+.ivp .ivh{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.ivp .ivh b{flex:1 0 100%;font-size:11px;text-transform:uppercase;color:var(--mu);letter-spacing:.05em}.ivp .ivh button{flex:1}
+.ivp .paper{background:#fff;border:1px solid var(--ln);border-radius:10px;padding:28px 30px;box-shadow:0 6px 24px #081c3614;min-height:420px;font-size:13px}.ivp .paper h2{font-size:20px}.ivp .paper th{background:var(--bl)!important;color:var(--b)!important}
+.mt{color:#9aa6b5;font-weight:400}
+@media (min-width:1000px){.ivw{grid-template-columns:minmax(380px,500px) minmax(0,1fr);align-items:start}.ivp{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
 #paper{display:none}@media print{body{background:#fff}body>*{display:none!important}body>#paper{display:block!important}}
 .chart{display:flex;gap:8px;align-items:flex-end;overflow-x:auto;padding-top:12px}
 .col{flex:1;min-width:36px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px}.col i{width:100%;max-width:48px;background:#0068ff;border-radius:6px 6px 0 0}
@@ -437,10 +442,10 @@ function checkInv() {
   if (!inv.po) { inv.po = 'PO-' + new Date().toISOString().replace(/\D/g,'').slice(2,14); const f = $('[data-i=po]'); if (f) f.value = inv.po; }
   return true;
 }
-function paperHTML() {
-  const x = S.find(s => s.id === inv.salon);
-  return `<div class="paper"><div class="cols"><div><h2>${esc(inv.company)}</h2></div><div class="r"><h2>INVOICE</h2>Date: ${esc(inv.date)}<br>PO Number: ${esc(inv.po)}<br>Location: ${esc(inv.location)}<br>Requested Delivery: ${esc(inv.delivery)}</div></div>
-    <p><b>Bill to</b><br>${esc(x.name)}<br>${esc(x.owner)}<br>${esc(x.cellphone || x.phone)}<br>${esc(address(x))}</p>
+function paperHTML(live) {
+  const x = S.find(s => s.id === inv.salon) || {}, or = (v, t) => esc(v) || (live ? `<span class="mt">${t}</span>` : '');
+  return `<div class="paper"><div class="cols"><div><h2>${or(inv.company, 'Tên công ty')}</h2></div><div class="r"><h2>INVOICE</h2>Date: ${esc(inv.date)}<br>PO Number: ${or(inv.po, 'tự tạo khi tải')}<br>Location: ${esc(inv.location)}<br>Requested Delivery: ${esc(inv.delivery)}</div></div>
+    <p><b>Bill to</b><br>${or(x.name, 'Chọn khách hàng')}<br>${esc(x.owner)}<br>${esc(x.cellphone || x.phone)}<br>${esc(address(x))}</p>
     <table><tr><th>Item</th><th>SKU</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>${inv.lines.filter(l => l.name.trim()).map(l => `<tr><td>${esc(l.name)}</td><td>${esc(l.sku)}</td><td class="r">${esc(l.qty)}</td><td class="r">${usd(cents(l.price))}</td><td class="r">${usd(Math.round(Number(l.qty) * cents(l.price)))}</td></tr>`).join('')}</table>
     <div class="tot sum">${sumHTML()}</div><p>Payment method: ${esc(inv.method || '-')}<br>Warranty: ${inv.warranty === '0' ? 'None' : esc(inv.warranty) + ' months'}${inv.note ? `<br>Note: ${esc(inv.note)}` : ''}</p></div>`;
 }
@@ -449,7 +454,7 @@ function invoiceView(v) {
   const f = (k, label, attr = '') => `<label><span>${label}</span><input data-i="${k}" value="${esc(inv[k])}" ${attr}></label>`;
   const num = (k, label) => f(k, label, 'type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"');
   const x = S.find(s => s.id === inv.salon);
-    v.innerHTML = `<div class="iv"><h2>Tạo Invoice mới</h2><small>${esc(me.name)}</small>
+    v.innerHTML = `<div class="ivw"><div class="iv"><h2>Tạo Invoice mới</h2><small>${esc(me.name)}</small>
     <h4>Công ty</h4>${f('company','Tên công ty trên invoice','placeholder="Tên công ty của bạn"')}
     <h4>Thông tin đơn hàng</h4>${f('date','Date','type="date"')}${f('po','PO Number','placeholder="Tự động"')}${f('location','Location')}<label><span>Requested Delivery</span><select data-i="delivery">${opts(DELIVERY.map(d => [d,d]), inv.delivery)}</select></label>
     <h4>Khách hàng</h4>${x ? `<div class="card"><button type="button" id="unpick" style="float:right">✕</button><b>${esc(x.name)}</b><br>${[x.owner, x.cellphone, x.phone].filter(Boolean).map(esc).join(' | ')}<br>${esc(address(x))}</div>`
@@ -462,11 +467,11 @@ function invoiceView(v) {
     ${num('discount','Extra Discount ($)')}${num('fee','Charge Fee ($)')}
     <label><span>Bảo hành</span><select data-i="warranty">${opts([['0','Không'],['6','6 tháng'],['12','12 tháng'],['24','24 tháng']], inv.warranty)}</select></label>
     ${f('note','Ghi chú','placeholder="Ghi chú..."')}
-    <div class="card sum" id="sum">${sumHTML()}</div>
-    <div class="bar"><button type="button" id="rs">Reset</button><button type="button" id="see">Preview</button><button type="button" class="main" id="pdf">Tải PDF</button></div>
-    <div class="bar"><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : 'Lưu thành đơn hàng'}</button></div></div>`;
+    </div>
+    <aside class="ivp"><div class="ivh"><b>Bản invoice gửi khách (cập nhật trực tiếp)</b><button type="button" id="rs">Reset</button><button type="button" class="main" id="pdf">Tải PDF / In</button><button type="button" id="keep" ${inv.saved ? 'disabled' : ''}>${inv.saved ? '✓ Đã lưu thành đơn' : 'Lưu thành đơn hàng'}</button></div>
+    <div id="live">${paperHTML(true)}</div></aside></div>`;
   const again = () => invoiceView(v);
-  const changed = () => { inv.saved = false; $('#sum').innerHTML = sumHTML(); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
+  const changed = () => { inv.saved = false; $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
   v.querySelectorAll('[data-i]').forEach(el => el.oninput = () => { inv[el.dataset.i] = el.value; if (el.dataset.i === 'company') store.set(el.value); changed(); });
   v.querySelectorAll('[data-l]').forEach(el => el.oninput = () => { inv.lines[el.dataset.l][el.dataset.k] = el.value; changed(); });
   v.querySelectorAll('[data-k=name]').forEach(el => el.onchange = () => {   // chọn từ danh mục thì tự điền SKU và giá
@@ -484,11 +489,6 @@ function invoiceView(v) {
   };
   $('#rs').onclick = () => { if (confirm('Xoá hết thông tin đang nhập?')) { inv = newInv(); again(); } };
   const print = () => { const old = document.title; $('#paper').innerHTML = paperHTML(); document.title = inv.po; window.print(); document.title = old; };
-  $('#see').onclick = () => {
-    if (!checkInv()) return;
-    $('#pv').innerHTML = `${paperHTML()}<div class="bar"><button type="button" id="pc">Đóng</button><button type="button" class="main" id="pp">Tải PDF</button></div>`;
-    $('#pv').showModal(); $('#pc').onclick = () => $('#pv').close(); $('#pp').onclick = print;
-  };
   $('#pdf').onclick = () => { if (checkInv()) print(); };
   $('#keep').onclick = async e => {
     if (!checkInv() || !confirm('Lưu invoice này thành đơn hàng và tính vào doanh số?')) return;
