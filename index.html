@@ -239,7 +239,7 @@ const overdue = s => s.follow_up && new Date(s.follow_up) < new Date() && !s.do_
 const monthOf = s => s.created_at.slice(0,7);
 const values = k => [...new Set(S.map(s => s[k]).filter(Boolean))].sort();
 const initials = id => esc((M.find(m => m.user_id === id)?.name || '?').slice(0,2).toUpperCase());
-let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [], P = [], noProducts = false, pq = '', noDaily = false;
+let me, tab = 'salons', q = '', S = [], C = [], O = [], M = [], P = [], noProducts = false, pq = '', noDaily = false, dailyErr = '';
 
 const time = (d, tz) => new Date(d).toLocaleString('vi-VN', {timeZone: tz, dateStyle:'short', timeStyle:'short'});
 const money = n => '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2});
@@ -265,7 +265,7 @@ async function load() {
   S.forEach(s => { if (s.stage === 'interested') s.stage = 'called'; });
   me = M.find(m => m.user_id === me.user_id);
   await loadProducts();
-  noDaily = !!(await db.from('activity').select('id').range(0, 0)).error;
+  { const ar = await db.from('activity').select('id').range(0, 0); noDaily = !!ar.error; dailyErr = ar.error ? ar.error.message : ''; }
   render();
 }
 async function start() {
@@ -630,7 +630,7 @@ function editProduct(p = {}) {
 
 // ---- Chờ duyệt ----
 function approveView(v) {
-  if (noDaily) { v.innerHTML = '<h2>Chờ duyệt</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.</div>'; return; }
+  if (noDaily) { v.innerHTML = '<h2>Chờ duyệt</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.<br><small>Chi tiết lỗi: ${esc(dailyErr)}</small></div>'; return; }
   const r = O.filter(o => !o.approved_at && (isAdmin() || o.user_id === me.user_id));
   v.innerHTML = `<h2>Chờ duyệt (${r.length})</h2><div class="scroll"><table><tr><th>Ngày</th><th>Tiệm</th><th>Số tiền</th><th>Sản phẩm</th><th>Nhân viên</th>${isAdmin() ? '<th></th>' : ''}</tr>${r.reverse().map(o => `<tr><td>${time(o.created_at)}</td><td>${esc(S.find(x => x.id === o.salon_id)?.name)}</td><td>${money(o.amount)}</td><td>${esc(o.note)}</td><td>${esc(M.find(m => m.user_id === o.user_id)?.name)}</td>${isAdmin() ? `<td><button class="main" data-ok="${o.id}">Duyệt</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6">Không có đơn chờ duyệt</td></tr>'}</table></div>`;
   v.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
@@ -674,7 +674,7 @@ function dailyStats(A) {
   return {rows, perDay, data: new Set(work.map(a => a.salon_id)).size, fresh: total('fresh'), old: total('old'), quotes: total('quotes'), invoices: total('invoices')};
 }
 async function dailyView(v) {
-  if (noDaily) { v.innerHTML = '<h2>Daily Report</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.</div>'; return; }
+  if (noDaily) { v.innerHTML = '<h2>Daily Report</h2><div class="card">Admin chạy file daily.sql trong Supabase rồi tải lại trang.<br><small>Chi tiết lỗi: ${esc(dailyErr)}</small></div>'; return; }
   if (!dr) { const tz = 'America/Chicago', to = usParts(Date.now(), tz).day; dr = {tz, to, from: addDay(to, -6), h1: '', h2: ''}; }
   const hours = [['', '--'], ...Array.from({length: 24}, (_, h) => [String(h), h + 'h'])];
   v.innerHTML = `<div class="dk"><h2>Daily Report</h2><form id="drf">
