@@ -129,6 +129,7 @@ nav button.on{color:#fff;background:#ffffff26;border-top-color:#fff}#out{color:#
 .dlb{display:flex;gap:10px;padding:6px 4px 0}.dlb span{flex:1;text-align:center;color:#8d8aa8;font-size:12px}
 .dk .scroll{background:#1a1830;border-color:#2f2b57;border-radius:18px}.dk td{color:#e8e8f5;border-color:#2f2b57}.dk th{background:#24214a;color:#a9a6ff;border-bottom-color:#6d5dfc}
 .dk .rank div{background:#24214a;border-radius:4px}.dk .rank div i{background:#6d5dfc}.dk .rank em{color:#111}
+.vbox{background:#fbfcfe;border:1px solid var(--ln);border-radius:10px;padding:4px 12px 12px;margin:0 0 8px}
 .mt{color:#9aa6b5;font-weight:400}
 @media (min-width:1000px){.ivw{grid-template-columns:minmax(380px,500px) minmax(0,1fr);align-items:start}.ivp{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
 #paper{display:none}@media print{body{background:#fff}body>*{display:none!important}body>#paper{display:block!important}}
@@ -455,9 +456,13 @@ const store = {get: () => { try { return localStorage.getItem('company') || ''; 
 const CO = {addr:'3112 N Jupiter Rd #102, Garland, TX 75044, Hoa Kỳ', phone:'(214) 703-0018', color:'#ea580c', terms:'Full payment must be received prior to delivery or shipment.\nDeposits for all custom-made and pre-order items are non-refundable. If a custom or pre-order is canceled by the customer, the deposit will be forfeited. Custom-made items are non-refundable and non-returnable once produced.\nEligible returned items will be refunded minus original shipping fees and a 30% restocking fee.\nWe reserve the right to withhold or repossess any unpaid merchandise if full payment is not received.'};
 const coGet = k => { try { const v = localStorage.getItem('co_' + k); return v === null ? CO[k] : v; } catch { return CO[k]; } };
 const coSet = (k, v) => { try { localStorage.setItem('co_' + k, v); } catch {} };
+const vGet = () => { try { const a = JSON.parse(localStorage.getItem('vendors')); if (Array.isArray(a) && a.length) return a; } catch {} return [{name:'TOP NAIL SUPPLY', addr:CO.addr, phone:CO.phone}]; };
+let VEND = vGet(), vedit = null;
+const vSave = () => { try { localStorage.setItem('vendors', JSON.stringify(VEND)); } catch {} };
+const vPick = () => { let n = ''; try { n = localStorage.getItem('vendor_sel') || ''; } catch {} return VEND.find(v => v.name === n) || VEND[0]; };
 const COLORS = [['#6d28d9','Tím'],['#0f8b8d','Xanh ngọc'],['#1d4ed8','Xanh dương'],['#ea580c','Cam'],['#db2777','Hồng'],['#15803d','Xanh lá'],['#111827','Đen']];
 const newLine = () => ({name:'', sku:'', qty:1, price:'', disc:''});
-const newInv = (salon = null) => ({company: store.get(), addr: coGet('addr'), phone: coGet('phone'), terms: coGet('terms'), color: coGet('color'), date: today(), po:'', location: salon ? ST[(salon.state || '').toUpperCase()]?.[0] || '' : '', delivery:'CUSTOMER WILL CALL',
+const newInv = (salon = null) => ({company: vPick().name, addr: vPick().addr, phone: vPick().phone, terms: coGet('terms'), color: coGet('color'), date: today(), po:'', location: salon ? ST[(salon.state || '').toUpperCase()]?.[0] || '' : '', delivery:'CUSTOMER WILL CALL',
   salon: salon?.id || null, lines:[newLine()], tax:'', deposit:'', method:'', discount:'', fee:'', warranty:'12', note:'', saved:false});
 let inv = null;
 const cents = v => Math.round((Number(v) || 0) * 100);
@@ -500,11 +505,16 @@ function paperHTML(live) {
 }
 function invoiceView(v) {
   inv = inv || newInv();
+  const applyVendor = x => { inv.company = x.name; inv.addr = x.addr; inv.phone = x.phone; try { localStorage.setItem('vendor_sel', x.name); } catch {} };
+  if (!VEND.some(x => x.name === inv.company)) applyVendor(vPick());
   const f = (k, label, attr = '') => `<label><span>${label}</span><input data-i="${k}" value="${esc(inv[k])}" ${attr}></label>`;
   const num = (k, label) => f(k, label, 'type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"');
   const x = S.find(s => s.id === inv.salon);
     v.innerHTML = `<div class="ivw"><div class="iv"><h2>Tạo Invoice mới</h2><small>${esc(me.name)}</small>
-    <h4>Công ty</h4>${f('company','Tên công ty trên invoice','placeholder="Tên công ty của bạn"')}${f('addr','Địa chỉ công ty','placeholder="Số nhà, đường, thành phố, bang, zip"')}${f('phone','Số điện thoại công ty','type="tel" placeholder="+1..."')}<div class="swl"><span>Màu invoice</span><div class="sw">${COLORS.map(([c, n]) => `<button type="button" data-color="${c}" title="${n}" class="${c === inv.color ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div></div>
+    <h4>Vendor</h4><label><span>Vendor</span><select data-vsel>${VEND.map(v => `<option value="${esc(v.name)}" ${v.name === inv.company ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select></label>
+    <div class="bar" style="margin:0 0 8px"><button type="button" id="vedit">Sửa vendor</button><button type="button" id="vnew">+ Thêm vendor</button></div>
+    ${vedit !== null ? `<div class="vbox"><label><span>Tên vendor</span><input id="v_name" value="${esc(vedit === 'new' ? '' : VEND[vedit].name)}"></label><label><span>Địa chỉ</span><input id="v_addr" value="${esc(vedit === 'new' ? '' : VEND[vedit].addr)}" placeholder="Số nhà, đường, thành phố, bang, zip"></label><label><span>Số điện thoại</span><input id="v_phone" type="tel" value="${esc(vedit === 'new' ? '' : VEND[vedit].phone)}"></label><div class="bar" style="margin:0"><button type="button" id="vcancel">Huỷ</button>${vedit !== 'new' && VEND.length > 1 ? '<button type="button" id="vdel">Xoá</button>' : ''}<button type="button" class="main" id="vsave">Lưu vendor</button></div></div>` : ''}
+    <div class="swl"><span>Màu invoice</span><div class="sw">${COLORS.map(([c, n]) => `<button type="button" data-color="${c}" title="${n}" class="${c === inv.color ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div></div>
     <h4>Thông tin đơn hàng</h4>${f('date','Date','type="date"')}${f('po','PO Number','placeholder="Tự động"')}${f('location','Location')}<label><span>Requested Delivery</span><select data-i="delivery">${opts(DELIVERY.map(d => [d,d]), inv.delivery)}</select></label>
     <h4>Khách hàng</h4>${x ? `<div class="card"><button type="button" id="unpick" style="float:right">✕</button><b>${esc(x.name)}</b><br>${[x.owner, x.cellphone, x.phone].filter(Boolean).map(esc).join(' | ')}<br>${esc(address(x))}</div>`
       : `<label><span>Tìm khách hàng (Mã KH, tên, SĐT)</span><input id="ik" placeholder="Nhập để tìm..." autocomplete="off"></label><div id="hits"></div>`}
@@ -521,6 +531,20 @@ function invoiceView(v) {
     <div id="live">${paperHTML(true)}</div></aside></div>`;
   const again = () => invoiceView(v);
   const changed = () => { inv.saved = false; v.querySelectorAll('[data-amt]').forEach(e => { const l = inv.lines[e.dataset.amt]; e.textContent = usd(lineAmt(l)); }); $('#live').innerHTML = paperHTML(true); $('#keep').disabled = false; $('#keep').textContent = 'Lưu thành đơn hàng'; };
+  v.querySelector('[data-vsel]').onchange = e => { applyVendor(VEND.find(x => x.name === e.target.value) || VEND[0]); changed(); };
+  $('#vedit').onclick = () => { vedit = Math.max(0, VEND.findIndex(x => x.name === inv.company)); again(); };
+  $('#vnew').onclick = () => { vedit = 'new'; again(); };
+  if (vedit !== null) {
+    $('#vcancel').onclick = () => { vedit = null; again(); };
+    if ($('#vdel')) $('#vdel').onclick = () => { if (!confirm('Xoá vendor này?')) return; VEND.splice(vedit, 1); vSave(); applyVendor(VEND[0]); vedit = null; again(); };
+    $('#vsave').onclick = () => {
+      const x = {name: $('#v_name').value.trim(), addr: $('#v_addr').value.trim(), phone: $('#v_phone').value.trim()};
+      if (!x.name) return alert('Chưa điền tên vendor.');
+      if (VEND.some((y, i) => y.name.toLowerCase() === x.name.toLowerCase() && i !== vedit)) return alert('Tên vendor này đã có.');
+      if (vedit === 'new') VEND.push(x); else VEND[vedit] = x;
+      vSave(); applyVendor(x); vedit = null; again();
+    };
+  }
   v.querySelectorAll('[data-color]').forEach(b => b.onclick = () => { inv.color = b.dataset.color; coSet('color', inv.color); v.querySelectorAll('[data-color]').forEach(x => x.classList.toggle('on', x === b)); changed(); });
   v.querySelectorAll('[data-i]').forEach(el => el.oninput = () => { inv[el.dataset.i] = el.value; if (el.dataset.i === 'company') store.set(el.value); if (['addr','phone','terms'].includes(el.dataset.i)) coSet(el.dataset.i, el.value); changed(); });
   v.querySelectorAll('[data-l]').forEach(el => el.oninput = () => { inv.lines[el.dataset.l][el.dataset.k] = el.value; changed(); });
