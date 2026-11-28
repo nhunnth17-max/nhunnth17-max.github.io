@@ -438,7 +438,7 @@ const today = () => new Date().toLocaleDateString('en-CA');
 const PAY = ['Check','Zelle','Credit Card','Cash','Wire Transfer','Finance'];
 const DELIVERY = ['CUSTOMER WILL CALL','ASAP','PICK UP','PRE ORDER'];
 const store = {get: () => { try { return localStorage.getItem('company') || ''; } catch { return ''; } }, set: v => { try { localStorage.setItem('company', v); } catch {} }};
-const CO = {addr:'3112 N Jupiter Rd #102, Garland, TX 75044, Hoa Kỳ', phone:'+12147030018', terms:'Full payment must be received prior to delivery or shipment.\nDeposits for all custom-made and pre-order items are non-refundable. If a custom or pre-order is canceled by the customer, the deposit will be forfeited. Custom-made items are non-refundable and non-returnable once produced.\nEligible returned items will be refunded minus original shipping fees and a 30% restocking fee.\nWe reserve the right to withhold or repossess any unpaid merchandise if full payment is not received.'};
+const CO = {addr:'3112 N Jupiter Rd #102, Garland, TX 75044, Hoa Kỳ', phone:'(214) 703-0018', terms:'Full payment must be received prior to delivery or shipment.\nDeposits for all custom-made and pre-order items are non-refundable. If a custom or pre-order is canceled by the customer, the deposit will be forfeited. Custom-made items are non-refundable and non-returnable once produced.\nEligible returned items will be refunded minus original shipping fees and a 30% restocking fee.\nWe reserve the right to withhold or repossess any unpaid merchandise if full payment is not received.'};
 const coGet = k => { try { const v = localStorage.getItem('co_' + k); return v === null ? CO[k] : v; } catch { return CO[k]; } };
 const coSet = (k, v) => { try { localStorage.setItem('co_' + k, v); } catch {} };
 const newLine = () => ({name:'', sku:'', qty:1, price:'', disc:''});
@@ -470,7 +470,7 @@ function paperHTML(live) {
   const rows = inv.lines.filter(l => l.name.trim());
   const m = (k, v) => `<div><small>${k}</small><b>${v}</b></div>`, r = (k, c) => `<div><span>${k}</span><b>${usd(c)}</b></div>`;
   const co = [esc(inv.addr), esc(inv.phone)].filter(Boolean).map(l => `<div>${l}</div>`).join('');
-  const bill = [['Customer Name', x.owner], ['Business Phone', x.phone], ['Cellphone', x.cellphone], ['Address', address(x)]].filter(([, v]) => v).map(([k, v]) => `<div>${k}: ${esc(v)}</div>`).join('');
+  const bill = [['Customer Name', x.owner], ['Business Phone', x.phone], ['Cellphone', x.cellphone], ['Address', address(x)]].map(([k, v]) => `<div>${k}: ${esc(v) || '-'}</div>`).join('');
   const terms = [inv.warranty !== '0' && `Includes a ${inv.warranty}-month warranty.`, ...String(inv.terms || '').split('\n'), inv.note && 'Note: ' + inv.note].filter(l => l && l.trim()).map(l => `<p>* ${esc(l)}</p>`).join('');
   const extra = ['Tax', 'Charge Fee', 'Extra Discount'].filter(k => T[k]).map(k => r(k, T[k])).join('');
   return `<div class="paper"><div class="pp-head"><h2>${or(inv.company, 'Tên công ty')}</h2>${co}</div>
